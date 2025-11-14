@@ -37,9 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'tailwind',
-    'expiry',
-    'Users',
+    'expiry.apps.ExpiryConfig',
+    'Users.apps.UsersConfig',
 ]
 
 TAILWIND_APP_NAME = 'expiry'
