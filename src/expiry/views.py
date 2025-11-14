@@ -3,20 +3,22 @@ from django.template import loader
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user
 
-from .models import Question
+def startup(request):
+    return render(request, 'expiry/startup.html')
 
-def login(request):
-    if 'username' in request.POST and 'password' in request.POST:
-        print("yippee!")
-        pass    # do stuff with details
+def login_view(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
 
-    template = loader.get_template("expiry/login.html")
-    context = {"Login" : template}
+        #this is where authentication logic needs to go
 
-    return render(request, "expiry/login.html", context)
+    return render(request, 'expiry/login.html')
+
+def signup_view(request):
+    return render(request, 'expiry/signup.html')
+
+def dashboard(request):
+    return render(request, 'expiry/dashboard.html')
 
 
-
-def detail(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, "polls/detail.html", {"question": question})
