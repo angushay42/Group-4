@@ -2,3 +2,5 @@ test.py
 /.vscode
 /env
 notes.md
+*.log
+/logs
