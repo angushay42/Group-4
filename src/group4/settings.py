@@ -31,14 +31,19 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'expiry.apps.ExpiryConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'tailwind',
+    'expiry',
+    'Users',
 ]
+
+TAILWIND_APP_NAME = 'expiry'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
