@@ -12,6 +12,7 @@ def startup(request):
     return render(request, 'expiry/startup.html')
 
 def login_view(request):
+    logger.debug("login page viewed")
     if request.method == 'POST':
         logger.debug("post data: {}".format(
             request.POST
