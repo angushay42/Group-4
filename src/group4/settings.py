@@ -149,6 +149,11 @@ LOGGING = {
             "class": "logging.FileHandler",
             "filename": LOGS_DIR / "views.log",
         },
+        "tests_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": LOGS_DIR / "tests.log",
+        },
         "console": {
             "level": "INFO",
             "class": "logging.StreamHandler",
@@ -162,6 +167,11 @@ LOGGING = {
         },
         "views": {
             "handlers": ["views_file", "console"],
+            "level": "DEBUG",
+            "propogate": False,
+        },
+        "tests": {
+            "handlers": ["tests_file", "console"],
             "level": "DEBUG",
             "propogate": False,
         },
