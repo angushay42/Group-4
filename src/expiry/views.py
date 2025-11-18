@@ -8,6 +8,7 @@ from django.core.validators import EmailValidator, validate_email
 from django.core.handlers.wsgi import WSGIRequest
 from django.contrib.sessions.models import Session
 from . import forms
+from django.contrib import messages
 
 import logging
 
@@ -21,16 +22,22 @@ def startup(request):
 
 def logout_view(request):
     logout(request)
-    return render(request, "expiry/login.html")
+    return redirect("login")
 
-def login_view(request: WSGIRequest):
+def login_view(request):
+
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+
     if request.method == "POST":
-        form = AuthenticationForm(data=request.POST)
+        form = forms.LogininForm(request.POST)
         if form.is_valid():
-            login(request, form.get_user())
-            return redirect("expiry/dashboard.html")
+            user = form.cleaned_data['user']
+            login(request, user)
+            messages.success(request, "Logged in successfully!")
+            return redirect("dashboard")
     else:
-        form = AuthenticationForm()
+        form = forms.LogininForm()
     return render(request, "expiry/login.html", {"form" : form})
 
 def signup_view(request):
@@ -38,14 +45,14 @@ def signup_view(request):
         form = forms.RegisterUserForm(request.POST)
         if form.is_valid():
             login(request,form.save())
-            return redirect("expiry:dashboard")
+            return redirect("dashboard")
     else:
         form = forms.RegisterUserForm()
     return render(request, 'expiry/signup.html', {"form" : form})
 
 def dashboard(request):
     if not request.user.is_authenticated:    #limits access when not logged in
-        return render(request, "expiry/login.html")
+        return render(request, "login")
     else:
         return render(request, 'expiry/dashboard.html')
 
