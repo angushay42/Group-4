@@ -7,9 +7,11 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import EmailValidator, validate_email
 from django.core.handlers.wsgi import WSGIRequest
 from django.contrib.sessions.models import Session
-
+from . import forms
 
 import logging
+
+
 
 logger = logging.getLogger('views')
 
@@ -33,14 +35,13 @@ def login_view(request: WSGIRequest):
 
 def signup_view(request):
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = forms.RegisterUserForm(request.POST)
         if form.is_valid():
             login(request,form.save())
             return redirect("expiry:dashboard")
     else:
-        form = UserCreationForm()
+        form = forms.RegisterUserForm()
     return render(request, 'expiry/signup.html', {"form" : form})
-
 
 def dashboard(request):
     if not request.user.is_authenticated:    #limits access when not logged in
