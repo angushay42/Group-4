@@ -15,6 +15,9 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# make logging folder if it doesn't exist
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(exist_ok=True)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -31,14 +34,19 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'expiry.apps.ExpiryConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'expiry',
+    'Users',
+    'tailwind',
 ]
+
+TAILWIND_APP_NAME = 'Users'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -52,6 +60,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'group4.urls'
 
+# @dev maybe this is where we add templates for tailwind?
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -68,7 +77,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'group4.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -121,3 +129,51 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# testing logging
+# https://docs.djangoproject.com/en/5.2/topics/logging/
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "django_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": LOGS_DIR / "django.log",
+        },
+        "views_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": LOGS_DIR / "views.log",
+        },
+        "tests_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": LOGS_DIR / "tests.log",
+        },
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["django_file"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+        "views": {
+            "handlers": ["views_file", "console"],
+            "level": "DEBUG",
+            "propogate": False,
+        },
+        "tests": {
+            "handlers": ["tests_file", "console"],
+            "level": "DEBUG",
+            "propogate": False,
+        },
+    },
+}

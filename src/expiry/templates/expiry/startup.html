@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center p-4">
+    <div class="w-full max-w-sm">
+
+
+        <div class="flex justify-center mb-16">
+            <div class="bg-white rounded-full w-40 h-40 flex items-center justify-center shadow-lg">
+                <div class="text-center">
+                    <p class="text-xl font-semibold text-gray-800">Managing</p>
+                    <p class="text-xl font-semibold text-gray-800">food waste</p>
+                </div>
+            </div>
+        </div>
+
+
+        <form method="GET" class="space-y-4 mt-auto" action="{% url 'login' %}"">
+            {% csrf_token %}
+
+            <button
+                    type="submit"
+                    class="w-full bg-white/30 backdrop-blur-md text-white font-medium py-4 px-6 rounded-full shadow-lg hover:bg-white/40 transition-all duration-300 border border-white/20"
+            >
+                    Login
+            </button>
+
+            <div class="text-center mt-6">
+                <a href="#" class="text-white text-sm font-medium hover:underline">
+                    Create an account
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
