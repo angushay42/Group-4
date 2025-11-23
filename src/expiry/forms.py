@@ -2,6 +2,12 @@ from django.contrib.auth.forms import UserCreationForm
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+
+import logging
+
+logger = logging.Logger('forms')
 
 class RegisterUserForm(UserCreationForm):
     email = forms.EmailField(max_length=150,widget=forms.TextInput(attrs={
@@ -47,7 +53,13 @@ class LogininForm(forms.Form):
     }))
 
     def clean(self):
-        cleaned_data = super().clean()
+        try:
+            cleaned_data = super().clean()
+        except ValidationError as e:
+            logger.debug(
+                "error at {}: {}".format(timezone.now(), e)
+            )
+
         username = cleaned_data.get('username')  # Changed from 'user' to 'username'
         password = cleaned_data.get('password')
 

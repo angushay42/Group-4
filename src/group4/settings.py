@@ -154,6 +154,11 @@ LOGGING = {
             "class": "logging.FileHandler",
             "filename": LOGS_DIR / "tests.log",
         },
+        "forms_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": LOGS_DIR / "forms.log",
+        },
         "console": {
             "level": "INFO",
             "class": "logging.StreamHandler",
