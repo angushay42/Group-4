@@ -51,8 +51,19 @@ def signup_view(request):
     return render(request, 'expiry/signup.html', {"form" : form})
 
 def dashboard(request):
-    if not request.user.is_authenticated:    #limits access when not logged in
-        return render(request, "login")
+    """
+    tips from docs:
+    - instantiate form objects in views
+    - form instances have is_valid() method that attaches cleaned_data as an 
+    attribute
+    - if method=POST, pop the request.POST into the constructor (bind to 
+    form data)
+    - 
+    """
+
+
+    if not request.user.is_authenticated:   # limits access when not logged in
+        return render(request, "login")     # redirect?
     else:
         return render(request, 'expiry/dashboard.html')
 
