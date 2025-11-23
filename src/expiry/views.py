@@ -38,7 +38,7 @@ def login_view(request):
             return redirect("dashboard")
     else:
         form = forms.LogininForm()
-    return render(request, "expiry/login.html", {"form" : form})
+    return render(request, "expiry/login.html", {"login_form" : form})
 
 def signup_view(request):
     if request.method == "POST":
