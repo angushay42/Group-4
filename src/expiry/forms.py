@@ -31,6 +31,10 @@ class RegisterUserForm(UserCreationForm):
             'class': 'border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-green-600 rounded-xl'
         })
 
+        self.fields['username'].help_text = None
+        self.fields['password1'].help_text = None
+        self.fields['password2'].help_text = None
+
 class LogininForm(forms.Form):
     username = forms.CharField(max_length=150, widget=forms.TextInput(attrs={
         'class': 'border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-green-600 rounded-xl',
