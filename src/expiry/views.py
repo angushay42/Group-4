@@ -1,15 +1,18 @@
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm, AuthenticationForm
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import get_user
-
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import EmailValidator, validate_email
 from django.core.handlers.wsgi import WSGIRequest
 from django.contrib.sessions.models import Session
-
+from . import forms
+from django.contrib import messages
 
 import logging
+
+
 
 logger = logging.getLogger('views')
 
@@ -17,70 +20,40 @@ def startup(request):
     logger.debug("startup page viewed")
     return render(request, 'expiry/startup.html')
 
-def login_view(request: WSGIRequest):
-    logger.debug("login page viewed")
+def logout_view(request):
+    logout(request)
+    return redirect("login")
 
-    logger.debug("session before checks: {}".format(
-        request.session.get_expiry_age()
-    ))
+def login_view(request):
 
-    request.session.set_expiry(0) # until browser closed
+    if request.user.is_authenticated:
+        return redirect("dashboard")
 
-    if request.method == 'POST':
-        # get details
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-
-        # checks, shouldn't ever happen due to html require
-        if (email == None and password == None):
-            logger.debug("whoops, no email or password")
-
-        # check if email is potentially valid
-        validator = EmailValidator()
-        try:
-            validator(email)
-        except ValidationError as err:
-            return render(
-                request, 
-                'expiry/login.html', 
-                {'error': str(err)},
-                status=400
-            )
-        
-        # check if user exists in database
-        user = authenticate(request, username=email, password=password)
-        if user is not None:
-
-            # default is on browser close
-            if request.POST.get("remember_me") == "on":  # don't like this 
-                logger.debug("remember_me is True")
-
-                request.session.set_expiry(None)
-
+    if request.method == "POST":
+        form = forms.LogininForm(request.POST)
+        if form.is_valid():
+            user = form.cleaned_data['user']
             login(request, user)
-            return redirect('dashboard')
-        else:
-            # doesn't exist, or invalid password
-            return render(
-                request, 
-                'expiry/login.html', {
-                    'error': "Invalid email or password"
-                },
-                status=401
-            )
-            
-        
-    
-    logger.debug("session after checks: {}".format(
-        request.session.get_expiry_age()
-    ))
-
-    return render(request, 'expiry/login.html')
+            messages.success(request, "Logged in successfully!")
+            return redirect("dashboard")
+    else:
+        form = forms.LogininForm()
+    return render(request, "expiry/login.html", {"form" : form})
 
 def signup_view(request):
-    return render(request, 'expiry/signup.html')
+    if request.method == "POST":
+        form = forms.RegisterUserForm(request.POST)
+        if form.is_valid():
+            login(request,form.save())
+            return redirect("dashboard")
+    else:
+        form = forms.RegisterUserForm()
+    return render(request, 'expiry/signup.html', {"form" : form})
 
 def dashboard(request):
-    return render(request, 'expiry/dashboard.html')
+    if not request.user.is_authenticated:    #limits access when not logged in
+        return render(request, "login")
+    else:
+        return render(request, 'expiry/dashboard.html')
 
 
