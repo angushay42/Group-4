@@ -102,7 +102,7 @@ class LogininForm(forms.Form):
 
         return cleaned_data
 
-class AddItem(forms.form):
+class AddItem(forms.Form):
     item_name = forms.CharField(
         max_length=150, 
         # @charlie edit if needed, I just copied
