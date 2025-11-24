@@ -23,6 +23,7 @@ class RegisterUserForm(UserCreationForm):
         widget=forms.TextInput(attrs={
             'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
                         'focus:ring-0 focus:border-green-600 rounded-xl',
+            'placeholder' : 'Name'
         })
     )
     last_name = forms.CharField(
@@ -30,6 +31,7 @@ class RegisterUserForm(UserCreationForm):
         widget=forms.TextInput(attrs={
         'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
                     'focus:ring-0 focus:border-green-600 rounded-xl',
+        'placeholder' : 'Surname'
         })
     )
 
@@ -50,15 +52,18 @@ class RegisterUserForm(UserCreationForm):
         # apply styling to all inherited fields
         self.fields['username'].widget.attrs.update({
             'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
-                        'focus:ring-0 focus:border-green-600 rounded-xl'
+                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'placeholder' : 'Username'
         })
         self.fields['password1'].widget.attrs.update({
             'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
-                        'focus:ring-0 focus:border-green-600 rounded-xl'
+                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'placeholder' : 'Password'
         })
         self.fields['password2'].widget.attrs.update({
             'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
-                        'focus:ring-0 focus:border-green-600 rounded-xl'
+                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'placeholder' : 'Confirm Password'
         })
 
         self.fields['username'].help_text = None
