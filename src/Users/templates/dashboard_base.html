@@ -1,0 +1,26 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}Food Waste Management{% endblock %}</title>
+    {% tailwind_css %}
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+</head>
+
+<body>
+{% include 'expiry/sidebar.html'%}
+
+
+<main class="p-8 transition-all duration-300" id="mainContent">
+    <div class="bg-white rounded-2xl p-8 shadow-xl max-w-6xl mx-auto">
+        {% block content %}{% endblock %}
+    </div>
+</main>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

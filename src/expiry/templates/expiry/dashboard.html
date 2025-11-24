@@ -1,14 +1,64 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-    <ul>
-    {% for item in items %}
-        <li>{{ item.item_name }}</li>
-    {% endfor %}
-    </ul>
-</body>
-</html>
+{% extends 'dashboard_base.html' %}
+
+{% block content %}
+<h1 class="text-gray-800 mb-6 text-4xl font-bold">Welcome Home!</h1>
+<p class="text-gray-600 leading-relaxed text-lg mb-8">
+    This is your home dashboard. Use the navbar to navigate between different sections of the app.
+</p>
+
+<div class="mt-8 p-6 bg-gradient-to-r from-green-200 to-white-50 rounded-xl border border-gray-200">
+    <h2 class="text-gray-800 mb-4 text-2xl font-semibold">Quick Stats</h2>
+    <p class="text-gray-600">Time to reduce food waste!</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+    <div class="bg-gradient-to-br from-green-400 to-green-600 text-white p-6 rounded-xl shadow-lg">
+        <div class="material-symbols-outlined text-5xl mb-2">kitchen</div>
+        <h3 class="text-xl font-semibold mb-2">Items Stored</h3>
+        <p class="text-3xl font-bold">0</p>
+    </div>
+
+    <div class="bg-gradient-to-br from-green-400 to-green-600 text-white p-6 rounded-xl shadow-lg">
+        <div class="material-symbols-outlined text-5xl mb-2">restaurant_menu</div>
+        <h3 class="text-xl font-semibold mb-2">Expiring Today</h3>
+        <p class="text-3xl font-bold">0</p>
+    </div>
+
+    <div class="bg-gradient-to-br from-green-400 to-green-600 text-white p-6 rounded-xl shadow-lg">
+        <div class="material-symbols-outlined text-5xl mb-2">severe_cold</div>
+        <h3 class="text-xl font-semibold mb-2">Items Frozen</h3>
+        <p class="text-3xl font-bold">0</p>
+    </div>
+
+    <button id="glassBtn"
+            class="fixed bottom-6 right-6 z-50 p-5 rounded-2xl
+           backdrop-blur-xl bg-gradient-to-br from-green-400 to-green-600 border border-white/20
+           shadow-xl hover:bg-white/20 transition">
+
+        <span class="absolute inset-0 rounded-2xl bg-white/20 opacity-0 hover:opacity-20 transition"></span>
+
+        <span id="icon"
+              class="material-symbols-outlined text-white text-4xl
+               transition-transform duration-300">
+        add_2
+    </span>
+    </button>
+
+    <script>
+        const btn = document.getElementById("glassBtn");
+        const icon = document.getElementById("icon");
+
+        let open = false;
+
+        btn.addEventListener("click", () => {
+            open = !open;
+            icon.style.transform = open ? "rotate(45deg)" : "rotate(0deg)";
+        });
+    </script>
+</div>
+
+
+<!-- all text set to 0 need to be changed to be linked to a backend database function to display the real number -->
+
+
+{% endblock %}

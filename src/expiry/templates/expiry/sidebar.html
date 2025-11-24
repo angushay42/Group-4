@@ -1,0 +1,121 @@
+{% load static %}
+
+
+<nav
+    id="sidebar"
+    class="fixed top-0 left-0 h-full bg-gradient-to-br from-green-400 to-green-600 text-white p-10 shadow-md w-64 md:w-72 lg:w-80 -translate-x-full transition-transform duration-300 ease-in-out origin-left z-[1000]"
+>
+    <div class="mb-8 flex-row">
+        <img
+            src="{}"
+            alt="Logo"
+            id="logo"
+            class="max-w-[8vw] max-h-[8vw]"
+        >
+    </div>
+
+    <ul class="flex flex-col gap-10">
+        <li class="sm:block">
+            <a
+                href="/dashboard"
+                class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+            >
+                <div class="material-symbols-outlined text-5xl mb-2"></div>
+                Home
+            </a>
+        </li>
+        <li class="sm:block">
+            <a
+                href="#"
+                class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+            >
+                <div class="material-symbols-outlined text-5xl mb-2"></div>
+                Add Item
+            </a>
+        </li>
+        <li class="sm:block">
+            <a
+                href="#"
+                class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+            >
+                <div class="material-symbols-outlined text-5xl mb-2"></div>
+                Notifications
+            </a>
+        </li>
+    </ul>
+
+    <button
+        id="toggleBtn"
+        onclick="toggleSidebar()"
+        class="absolute top-4 right-0 translate-x-full bg-gradient-to-br from-green-400 to-green-600 text-white p-2 rounded-r-md"
+    >
+        <span class="material-symbols-outlined" id="toggleIcon">chevron_left</span>
+    </button>
+</nav>
+
+<!-- Menu Button (when sidebar is closed) -->
+<button
+    id="menuBtn"
+    onclick="toggleSidebar()"
+    class="fixed top-4 left-0 bg-gray-800 text-white p-2 rounded-r-md z-10"
+>
+    <span class="material-symbols-outlined">menu</span>
+</button>
+
+<script>
+    let isSidebarOpen = false;
+    let isMobile = window.innerWidth < 768;
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const toggleIcon = document.getElementById('toggleIcon');
+        const menuBtn = document.getElementById('menuBtn');
+
+        isSidebarOpen = !isSidebarOpen;
+
+        if (isSidebarOpen) {
+            sidebar.classList.remove('-translate-x-full');
+            sidebar.classList.add('translate-x-0');
+            toggleIcon.textContent = 'chevron_left';
+            menuBtn.classList.add('hidden');
+        } else {
+            sidebar.classList.remove('translate-x-0');
+            sidebar.classList.add('-translate-x-full');
+            toggleIcon.textContent = 'chevron_right';
+            menuBtn.classList.remove('hidden');
+        }
+    }
+
+    function checkMobile() {
+        isMobile = window.innerWidth < 768;
+        const logo = document.getElementById('logo');
+        const sidebar = document.getElementById('sidebar');
+
+        if (isMobile) {
+            logo.classList.remove('max-w-[8vw]', 'max-h-[8vw]');
+            logo.classList.add('max-w-[16vw]', 'max-h-[16vw]');
+            sidebar.classList.remove('md:w-72', 'lg:w-80');
+            sidebar.classList.add('w-64');
+        } else {
+            logo.classList.remove('max-w-[16vw]', 'max-h-[16vw]');
+            logo.classList.add('max-w-[8vw]', 'max-h-[8vw]');
+            sidebar.classList.add('md:w-72', 'lg:w-80');
+        }
+    }
+
+    window.addEventListener('resize', checkMobile);
+    checkMobile();
+
+    // Store sidebar state in sessionStorage
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem('sidebarOpen', isSidebarOpen);
+    });
+
+    // Restore sidebar state on page load
+    window.addEventListener('load', () => {
+        const savedState = sessionStorage.getItem('sidebarOpen');
+        if (savedState === 'true') {
+            toggleSidebar();
+        }
+    });
+</script>
