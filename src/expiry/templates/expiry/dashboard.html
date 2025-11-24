@@ -5,6 +5,10 @@
     <title>Title</title>
 </head>
 <body>
-
+    <ul>
+    {% for item in items %}
+        <li>{{ item.item_name }}</li>
+    {% endfor %}
+    </ul>
 </body>
 </html>

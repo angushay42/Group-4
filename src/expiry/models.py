@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 from datetime import datetime, date
 
 class Item(models.Model):
@@ -30,6 +31,10 @@ class Item(models.Model):
     }
 
     # actual class attributes 
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
     item_name = models.CharField(max_length=20)     # BUG: magic number
     expiry_date = models.DateField()                # todo: any params?
     entry_date = models.DateTimeField(

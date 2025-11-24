@@ -9,9 +9,10 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import EmailValidator, validate_email
 from django.core.handlers.wsgi import WSGIRequest
 from django.contrib.sessions.models import Session
-
-from . import forms     # relative import, unsure if safe? (probs fine)
 from django.contrib import messages
+
+from . import forms
+from .models import Item
 
 import logging
 
@@ -64,14 +65,24 @@ def dashboard(request):
     - 
     """
 
-    # TODO:
-    # if user has any expiries, load them
-    # otherwise, load some "you have no items" default value
-
-
     if not request.user.is_authenticated:   # limits access when not logged in
         return render(request, "login")     # redirect?
-    else:
-        return render(request, 'expiry/dashboard.html')
 
+
+    # plan:
+    # if user has any expiries, load them
+    # otherwise, load some "you have no items" default value
+    
+    user = User.objects.get(username=request.user.username)  
+    items = Item.objects.filter(user=user)
+
+    if not items:
+        logger.debug('items empty')
+        # TODO @charlie return some html that says no items?
+    
+    context = {'items': items}
+
+    return render(request, 'expiry/dashboard.html', context=context)
+
+    
 
