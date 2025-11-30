@@ -1,9 +1,9 @@
 {% load static %}
 
-
+<!-- Desktop Sidebar -->
 <nav
         id="sidebar"
-        class="fixed top-0 left-0 h-full bg-gradient-to-br from-green-400 to-green-600 text-white p-10 shadow-md w-64 md:w-72 lg:w-80 -translate-x-full transition-transform duration-300 ease-in-out origin-left z-[1000]"
+        class="hidden md:block fixed top-0 left-0 h-full bg-gradient-to-br from-green-400 to-green-600 text-white p-10 shadow-md w-64 md:w-72 lg:w-80 -translate-x-full transition-transform duration-300 ease-in-out origin-left z-[1000]"
 >
     <div class="mb-8 flex-row">
         <img
@@ -15,49 +15,54 @@
     </div>
 
     <ul class="flex flex-col gap-10">
-        <li class="sm:block">
-            <a
-                    href="/dashboard"
-                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+        <li>
+
+            href="/dashboard"
+            class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
             >
-                <div class="material-symbols-outlined text-5xl mb-2">home</div>
-                Home
+            <div class="material-symbols-outlined text-5xl mb-2">home</div>
+            Home
             </a>
         </li>
-        <li class="sm:block">
-            <a
-                    href="#"
-                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+        <li>
+
+            href="#"
+            class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
             >
-                <div class="material-symbols-outlined text-5xl mb-2">kitchen</div>
-                My Items
+            <div class="material-symbols-outlined text-5xl mb-2">kitchen</div>
+            My Items
             </a>
         </li>
-        <li class="sm:block">
-            <a
-                    href="#"
-                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+        <li>
+
+            href="#"
+            class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
             >
-                <div class="material-symbols-outlined text-5xl mb-2">local_dining</div>
-                Recipes
+            <div class="material-symbols-outlined text-5xl mb-2">local_dining</div>
+            Recipes
             </a>
         </li>
-        <li class="sm:block">
-            <a
-                    href="#"
-                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+        <li>
+
+            href="#"
+            class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
             >
-                <div class="material-symbols-outlined text-5xl mb-2">group</div>
-                Friends
+            <div class="material-symbols-outlined text-5xl mb-2">group</div>
+            Friends
             </a>
         </li>
-        <li class="sm:block">
-            <a
-                    href="#"
-                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+        <li>
+
+            href="#"
+            class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
             >
-                <div class="material-symbols-outlined text-5xl mb-2">settings</div>
-                Settings
+            <div class="material-symbols-outlined text-5xl mb-2">settings</div>
+            Settings
             </a>
         </li>
     </ul>
@@ -71,18 +76,54 @@
     </button>
 </nav>
 
-<!-- Menu Button (when sidebar is closed) -->
+<!-- Desktop Menu Button -->
 <button
         id="menuBtn"
         onclick="toggleSidebar()"
-        class="fixed top-4 left-0 bg-gray-800 text-white p-2 rounded-r-md z-10"
+        class="hidden md:block fixed top-4 left-0 bg-gray-800 text-white p-2 rounded-r-md z-10"
 >
     <span class="material-symbols-outlined">menu</span>
 </button>
 
+<!-- Mobile Bottom Navigation -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-br from-green-400 to-green-600 text-white shadow-lg z-[1000]">
+    <ul class="flex justify-around items-center py-2">
+        <li>
+            <a href="/dashboard"
+               class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
+                <span class="material-symbols-outlined text-3xl">home</span>
+                <span class="text-xs">Home</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
+                <span class="material-symbols-outlined text-3xl">kitchen</span>
+                <span class="text-xs">Items</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
+                <span class="material-symbols-outlined text-3xl">local_dining</span>
+                <span class="text-xs">Recipes</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
+                <span class="material-symbols-outlined text-3xl">group</span>
+                <span class="text-xs">Friends</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
+                <span class="material-symbols-outlined text-3xl">settings</span>
+                <span class="text-xs">Settings</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
 <script>
     let isSidebarOpen = false;
-    let isMobile = window.innerWidth < 768;
 
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
@@ -104,36 +145,18 @@
         }
     }
 
-    function checkMobile() {
-        isMobile = window.innerWidth < 768;
-        const logo = document.getElementById('logo');
-        const sidebar = document.getElementById('sidebar');
-
-        if (isMobile) {
-            logo.classList.remove('max-w-[8vw]', 'max-h-[8vw]');
-            logo.classList.add('max-w-[16vw]', 'max-h-[16vw]');
-            sidebar.classList.remove('md:w-72', 'lg:w-80');
-            sidebar.classList.add('w-64');
-        } else {
-            logo.classList.remove('max-w-[16vw]', 'max-h-[16vw]');
-            logo.classList.add('max-w-[8vw]', 'max-h-[8vw]');
-            sidebar.classList.add('md:w-72', 'lg:w-80');
-        }
-    }
-
-    window.addEventListener('resize', checkMobile);
-    checkMobile();
-
     // Store sidebar state in sessionStorage
     window.addEventListener('beforeunload', () => {
         sessionStorage.setItem('sidebarOpen', isSidebarOpen);
     });
 
-    // Restore sidebar state on page load
+    // Restore sidebar state on page load (desktop only)
     window.addEventListener('load', () => {
-        const savedState = sessionStorage.getItem('sidebarOpen');
-        if (savedState === 'true') {
-            toggleSidebar();
+        if (window.innerWidth >= 768) {
+            const savedState = sessionStorage.getItem('sidebarOpen');x
+            if (savedState === 'true') {
+                toggleSidebar();
+            }
         }
     });
 </script>
