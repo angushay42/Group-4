@@ -2,52 +2,70 @@
 
 
 <nav
-    id="sidebar"
-    class="fixed top-0 left-0 h-full bg-gradient-to-br from-green-400 to-green-600 text-white p-10 shadow-md w-64 md:w-72 lg:w-80 -translate-x-full transition-transform duration-300 ease-in-out origin-left z-[1000]"
+        id="sidebar"
+        class="fixed top-0 left-0 h-full bg-gradient-to-br from-green-400 to-green-600 text-white p-10 shadow-md w-64 md:w-72 lg:w-80 -translate-x-full transition-transform duration-300 ease-in-out origin-left z-[1000]"
 >
     <div class="mb-8 flex-row">
         <img
-            src="{}"
-            alt="Logo"
-            id="logo"
-            class="max-w-[8vw] max-h-[8vw]"
+                src="{}"
+                alt="Logo"
+                id="logo"
+                class="max-w-[8vw] max-h-[8vw]"
         >
     </div>
 
     <ul class="flex flex-col gap-10">
         <li class="sm:block">
             <a
-                href="/dashboard"
-                class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                    href="/dashboard"
+                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
             >
-                <div class="material-symbols-outlined text-5xl mb-2"></div>
+                <div class="material-symbols-outlined text-5xl mb-2">home</div>
                 Home
             </a>
         </li>
         <li class="sm:block">
             <a
-                href="#"
-                class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                    href="#"
+                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
             >
-                <div class="material-symbols-outlined text-5xl mb-2"></div>
-                Add Item
+                <div class="material-symbols-outlined text-5xl mb-2">kitchen</div>
+                My Items
             </a>
         </li>
         <li class="sm:block">
             <a
-                href="#"
-                class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                    href="#"
+                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
             >
-                <div class="material-symbols-outlined text-5xl mb-2"></div>
-                Notifications
+                <div class="material-symbols-outlined text-5xl mb-2">local_dining</div>
+                Recipes
+            </a>
+        </li>
+        <li class="sm:block">
+            <a
+                    href="#"
+                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+            >
+                <div class="material-symbols-outlined text-5xl mb-2">group</div>
+                Friends
+            </a>
+        </li>
+        <li class="sm:block">
+            <a
+                    href="#"
+                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+            >
+                <div class="material-symbols-outlined text-5xl mb-2">settings</div>
+                Settings
             </a>
         </li>
     </ul>
 
     <button
-        id="toggleBtn"
-        onclick="toggleSidebar()"
-        class="absolute top-4 right-0 translate-x-full bg-gradient-to-br from-green-400 to-green-600 text-white p-2 rounded-r-md"
+            id="toggleBtn"
+            onclick="toggleSidebar()"
+            class="absolute top-4 right-0 translate-x-full bg-gradient-to-br from-green-400 to-green-600 text-white p-2 rounded-r-md"
     >
         <span class="material-symbols-outlined" id="toggleIcon">chevron_left</span>
     </button>
@@ -55,9 +73,9 @@
 
 <!-- Menu Button (when sidebar is closed) -->
 <button
-    id="menuBtn"
-    onclick="toggleSidebar()"
-    class="fixed top-4 left-0 bg-gray-800 text-white p-2 rounded-r-md z-10"
+        id="menuBtn"
+        onclick="toggleSidebar()"
+        class="fixed top-4 left-0 bg-gray-800 text-white p-2 rounded-r-md z-10"
 >
     <span class="material-symbols-outlined">menu</span>
 </button>

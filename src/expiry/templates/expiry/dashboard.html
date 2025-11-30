@@ -1,11 +1,16 @@
 {% extends 'dashboard_base.html' %}
 
 {% block content %}
-<h1 class="text-gray-800 mb-6 text-4xl font-bold">Welcome Home!</h1>
+<div class="flex justify-between items-start">
+    <h1 class="text-gray-800 mb-6 text-4xl font-bold">Welcome Home!</h1>
+    <div class="bg-gradient-to-br from-green-400 to-green-600 text-white p-6 rounded-full shadow-lg">
+        <div class="material-symbols-outlined text-5xl mb-2">notifications</div>
+    </div>
+</div>
+
 <p class="text-gray-600 leading-relaxed text-lg mb-8">
     This is your home dashboard. Use the navbar to navigate between different sections of the app.
 </p>
-
 <div class="mt-8 p-6 bg-gradient-to-r from-green-200 to-white-50 rounded-xl border border-gray-200">
     <h2 class="text-gray-800 mb-4 text-2xl font-semibold">Quick Stats</h2>
     <p class="text-gray-600">Time to reduce food waste!</p>
@@ -33,7 +38,7 @@
 
 <div class="flex justify-center mt-8">
     <button id="glassBtn"
-            class="p-5 rounded-2xl backdrop-blur-xl bg-gradient-to-br from-green-400 to-green-600 border border-white/20
+            class="p-5 rounded-full backdrop-blur-xl bg-gradient-to-br from-green-400 to-green-600 border border-white/20
            shadow-xl hover:bg-white/20 transition relative">
 
         <span class="absolute inset-0 rounded-2xl bg-white/20 opacity-0 hover:opacity-20 transition"></span>
@@ -46,17 +51,17 @@
 </div>
 
 
-    <script>
-        const btn = document.getElementById("glassBtn");
-        const icon = document.getElementById("icon");
+<script>
+    const btn = document.getElementById("glassBtn");
+    const icon = document.getElementById("icon");
 
-        let open = false;
+    let open = false;
 
-        btn.addEventListener("click", () => {
-            open = !open;
-            icon.style.transform = open ? "rotate(45deg)" : "rotate(0deg)";
-        });
-    </script>
+    btn.addEventListener("click", () => {
+        open = !open;
+        icon.style.transform = open ? "rotate(45deg)" : "rotate(0deg)";
+    });
+</script>
 </div>
 
 
