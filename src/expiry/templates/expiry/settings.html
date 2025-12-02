@@ -1,0 +1,77 @@
+{% extends 'dashboard_base.html' %}
+
+{% block content %}
+
+<div class="relative bg-gradient-to-br from-green-400 to-green-600 -m-8 mb-0 p-8 pb-6 md:rounded-2xl">
+    <div class="flex justify-between items-center">
+        <h1 class="text-white text-3xl md:text-4xl md:font-bold">Settings</h1>
+        <div class="w-13.5 h-13.5"></div>
+    </div>
+</div>
+
+<ul class="flex flex-col gap-6 mt-8 rounded-2xl">
+    <li>
+        <a class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0>">
+            Account Settings
+        </a>
+    </li>
+    <li>
+        <a class="glass rounded-xl px-6 py-3 flex items-center gap-7 shadow-xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0>">
+            Notification Frequency
+            <form class="max-w-[8rem] mx-auto">
+                <label for="time" class="block mb-2 text-sm font-medium text-heading">Select time:</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
+                        <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                             height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                        </svg>
+                    </div>
+                    <input type="time" id="time"
+                           class="block w-full p-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+                           min="09:00" max="18:00" value="00:00" required/>
+                </div>
+            </form>
+        </a>
+    </li>
+    <li>
+        <a class="glass rounded-xl px-6 py-3 flex items-center md:gap-3 gap-37 shadow-xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0>">
+            Notifications
+            <div class="relative inline-block w-11 h-5">
+                <input checked checked id="switch-component-1" type="checkbox"
+                       class="peer appearance-none w-11 h-5 bg-slate-100 rounded-full checked:bg-slate-800 cursor-pointer transition-colors duration-300"/>
+                <label for="switch-component-1"
+                       class="absolute top-0 left-0 w-5 h-5 bg-white rounded-full border border-slate-300 shadow-sm transition-transform duration-300 peer-checked:translate-x-6 peer-checked:border-slate-800 cursor-pointer">
+                </label>
+            </div>
+        </a>
+    </li>
+    <li>
+        <a class="glass rounded-xl px-6 py-3 flex items-center md:gap-3 gap-40 shadow-xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0>">
+            Dark Mode
+            <div class="relative inline-block w-11 h-5">
+                <input checked checked id="switch-component-2" type="checkbox"
+                       class="peer appearance-none w-11 h-5 bg-slate-100 rounded-full checked:bg-slate-800 cursor-pointer transition-colors duration-300"/>
+                <label for="switch-component-2"
+                       class="absolute top-0 left-0 w-5 h-5 bg-white rounded-full border border-slate-300 shadow-sm transition-transform duration-300 peer-checked:translate-x-6 peer-checked:border-slate-800 cursor-pointer">
+                </label>
+            </div>
+        </a>
+    </li>
+    <li>
+        <a class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0>"
+           href="logout"
+        >
+            Log Out
+        </a>
+    </li>
+</ul>
+
+
+{% endblock %}

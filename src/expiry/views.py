@@ -85,4 +85,9 @@ def dashboard(request):
     return render(request, 'expiry/dashboard.html', context=context)
 
     
+def settings(request):
 
+    if not request.user.is_authenticated:   # limits access when not logged in
+        return render(request, "login")     # redirect?
+
+    return render(request,'expiry/settings.html')
