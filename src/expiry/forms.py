@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from datetime import date
 
 import logging
 
@@ -109,8 +110,8 @@ class LogininForm(forms.Form):
 
 class AddItem(forms.Form):
     item_name = forms.CharField(
-        max_length=150, 
-        # @charlie edit if needed, I just copied
+        required=True,
+        max_length=50,
         widget=forms.TextInput(attrs={
             'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
                         'focus:ring-0 focus:border-green-600 rounded-xl',
@@ -118,22 +119,38 @@ class AddItem(forms.Form):
         })
     )
 
-    expiry_date = forms.DateField(  # unsure if any other params are needed
-        widget=forms.TextInput(attrs={
+    expiry_date = forms.DateField(
+        required=True,
+        widget=forms.DateInput(attrs={
             'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
                         'focus:ring-0 focus:border-green-600 rounded-xl',
-            'placeholder': 'Expiry date'
+            'placeholder': 'YYYY-MM-DD',
+            'type': 'date',
         })
     )     
     quantity = forms.IntegerField(
         min_value=1,
         required=True,
-        widget=forms.TextInput(attrs={
+        widget=forms.NumberInput(attrs={
             'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
                         'focus:ring-0 focus:border-green-600 rounded-xl',
             'placeholder': 'Quantity'
         })
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        expiry_date = cleaned_data.get('expiry_date')
+
+        if expiry_date and expiry_date.date() > date.today():   #Incase it is none uses an and so comparison doesn't execute as it is false
+            raise forms.ValidationError("Expiry date cannot be in the past")
+
+        return cleaned_data
+
+
+
+
+
 
 
     
