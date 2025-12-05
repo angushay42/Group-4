@@ -5,14 +5,7 @@
         id="sidebar"
         class="hidden md:block fixed top-0 left-0 h-full bg-gradient-to-br from-green-400 to-green-600 text-white p-10 shadow-md w-64 md:w-72 lg:w-80 -translate-x-full transition-transform duration-300 ease-in-out origin-left z-[1000]"
 >
-    <div class="mb-8 flex-row">
-        <img
-                src="{}"
-                alt="Logo"
-                id="logo"
-                class="max-w-[8vw] max-h-[8vw]"
-        >
-    </div>
+
 
     <ul class="flex flex-col gap-10">
         <li>
@@ -27,17 +20,37 @@
         </li>
         <li>
             <a
-                    href="/items"
-                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out
-            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
-            <div class="material-symbols-outlined text-5xl mb-2">kitchen</div>
-            My Items
+                    href="/add_item"
+                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300
+                ease-out
+                hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+                <div class="material-symbols-outlined text-5xl mb-2">add_box</div>
+                Add Item
             </a>
         </li>
         <li>
             <a
-                href="settings"
-                class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300
+                    href="/items"
+                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+                <div class="material-symbols-outlined text-5xl mb-2">kitchen</div>
+                My Items
+            </a>
+        </li>
+        <li>
+            <a
+                    href="#"
+                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300
+                ease-out
+                hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+                <div class="material-symbols-outlined text-5xl mb-2">notifications</div>
+                Notifications
+            </a>
+        </li>
+        <li>
+            <a
+                    href="/settings"
+                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300
                 ease-out
                 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
                 <div class="material-symbols-outlined text-5xl mb-2">settings</div>
@@ -75,13 +88,28 @@
             </a>
         </li>
         <li>
-            <a href="#" class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
-                <span class="material-symbols-outlined text-3xl">kitchen</span>
-                <span class="text-xs">Items</span>
+            <a href="/add_item"
+               class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
+                <span class="material-symbols-outlined text-3xl">add_box</span>
+                <span class="text-xs">Add Item</span>
             </a>
         </li>
         <li>
-            <a href="settings" class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
+            <a href="#" class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
+                <span class="material-symbols-outlined text-3xl">kitchen</span>
+                <span class="text-xs">My Items</span>
+            </a>
+        </li>
+        <li>
+            <a href="#"
+               class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
+                <span class="material-symbols-outlined text-3xl">notifications</span>
+                <span class="text-xs">Notifications</span>
+            </a>
+        </li>
+        <li>
+            <a href="settings"
+               class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
                 <span class="material-symbols-outlined text-3xl">settings</span>
                 <span class="text-xs">Settings</span>
             </a>

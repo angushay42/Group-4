@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.db.models import Case, When, IntegerField
 
 from . import forms
+from .forms import AddItem
 from .models import Item
 
 import logging
@@ -134,7 +135,29 @@ def items_list(request: HttpRequest):
     
 def settings(request: HttpRequest):
 
-    if not request.user.is_authenticated:   # limits access when not logged in
-        return render(request, "login")     # redirect?
+    if not request.user.is_authenticated:  # limits access when not logged in
+        return redirect("login")
 
     return render(request,'expiry/settings.html')
+
+def add_item_view(request: HttpRequest):
+    if not request.user.is_authenticated:  # limits access when not logged in
+        return redirect("login")
+
+    if request.method == "POST":
+        form = AddItem(request.POST)
+        if form.is_valid():
+            item_name = form.cleaned_data['item_name']
+            item_category = form.cleaned_data['item_category']
+            expiry_date = form.cleaned_data['expiry_date']
+            quantity = form.cleaned_data['quantity']
+
+            # TODO: Add database saving here
+            # Item.objects.create(name=item_name, expiry=expiry_date, qty=quantity)
+
+            messages.success(request, "Item added successfully!")
+            return redirect("dashboard")
+    else:
+        form = AddItem()
+
+    return render(request, "expiry/add_item.html", {"form": form})

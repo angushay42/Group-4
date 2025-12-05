@@ -115,7 +115,27 @@ class AddItem(forms.Form):
         widget=forms.TextInput(attrs={
             'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
                         'focus:ring-0 focus:border-green-600 rounded-xl',
-            'placeholder': 'Item'
+            'placeholder': 'Enter item name'
+        })
+    )
+
+    item_category = forms.CharField(
+        required=True,
+        max_length=50,
+        widget=forms.TextInput(attrs={
+            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'placeholder': 'e.g., Fruit, Dairy, Vegetables'
+        })
+    )
+
+    quantity = forms.IntegerField(
+        min_value=1,
+        required=True,
+        widget=forms.NumberInput(attrs={
+            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'placeholder': 'Quantity'
         })
     )
 
@@ -128,21 +148,13 @@ class AddItem(forms.Form):
             'type': 'date',
         })
     )     
-    quantity = forms.IntegerField(
-        min_value=1,
-        required=True,
-        widget=forms.NumberInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
-                        'focus:ring-0 focus:border-green-600 rounded-xl',
-            'placeholder': 'Quantity'
-        })
-    )
+
 
     def clean(self):
         cleaned_data = super().clean()
         expiry_date = cleaned_data.get('expiry_date')
 
-        if expiry_date and expiry_date.date() > date.today():   #Incase it is none uses an and so comparison doesn't execute as it is false
+        if expiry_date and expiry_date < date.today():   #Incase it is none uses an and so comparison doesn't execute as it is false
             raise forms.ValidationError("Expiry date cannot be in the past")
 
         return cleaned_data

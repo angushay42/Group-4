@@ -46,19 +46,20 @@
 </div>
 
 
-
 <div class="flex justify-center mt-8">
-    <button id="glassBtn"
-            class="p-5 rounded-full backdrop-blur-xl bg-gradient-to-br from-green-400 to-green-600 border border-white/20
+    <a href="{% url 'add_item' %}">
+        <button id="glassBtn"
+                class="p-5 rounded-full backdrop-blur-xl bg-gradient-to-br from-green-400 to-green-600 border border-white/20
            shadow-xl hover:bg-white/20 transition relative">
 
-        <span class="absolute inset-0 rounded-2xl bg-white/20 opacity-0 hover:opacity-20 transition"></span>
+            <span class="absolute inset-0 rounded-2xl bg-white/20 opacity-0 hover:opacity-20 transition"></span>
 
-        <span id="icon"
-              class="material-symbols-outlined text-white text-4xl transition-transform duration-300">
+            <span id="icon"
+                  class="material-symbols-outlined text-white text-4xl transition-transform duration-300">
         add_2
         </span>
-    </button>
+        </button>
+    </a>
 </div>
 
 
