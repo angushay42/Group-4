@@ -81,7 +81,7 @@ class LogininForm(forms.Form):
     )
 
     password = forms.CharField(
-        widget=forms.TextInput(attrs={
+        widget=forms.PasswordInput(attrs={
             'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
                         'focus:ring-0 focus:border-green-600 rounded-xl',
             'placeholder': 'Password'
