@@ -135,8 +135,8 @@ def items_list(request: HttpRequest):
     
 def settings(request: HttpRequest):
 
-    if not request.user.is_authenticated:  # limits access when not logged in
-        return redirect("login")
+    if not request.user.is_authenticated:  
+        return render(request, "login")
 
     return render(request,'expiry/settings.html')
 
