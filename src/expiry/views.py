@@ -102,7 +102,9 @@ def items_list(request: HttpRequest):
     error check for query parameters, if a false one given, just ignore it?
     """
 
+    #todo clean input, or make sure dashboard.html sends same string
     filter = request.GET.get('filter')
+    
 
     if not request.user.is_authenticated:
         return render(request, "login")
@@ -110,20 +112,22 @@ def items_list(request: HttpRequest):
     user = User.objects.get(username=request.user.username)  
     items = Item.objects.filter(user=user)
 
-    # annotate adds extra rows ONLY to QuerySet, shouldn't be
-    # too much overhead
-    # https://docs.djangoproject.com/en/5.2/topics/db/aggregation/
-    # https://docs.djangoproject.com/en/5.2/ref/models/conditional-expressions/
-    filtered = items.annotate(
-        is_frozen=Case(
-            When(storage_type="frozen", then=0),    # 0 is first
-            default=1,
-            output_field=IntegerField(),            # necessary?
-        )
-    ).order_by("is_frozen", "expiry_date")
-
-
     context = {'items': items}
+
+    if filter == "frozen":
+        # annotate adds extra rows ONLY to QuerySet, shouldn't be
+        # too much overhead
+        # https://docs.djangoproject.com/en/5.2/topics/db/aggregation/
+        # https://docs.djangoproject.com/en/5.2/ref/models/conditional-expressions/
+        filtered = items.annotate(
+            is_frozen=Case(
+                When(storage_type="frozen", then=0),    # 0 is first
+                default=1,
+                output_field=IntegerField(),            # necessary?
+            )
+        ).order_by("is_frozen", "expiry_date")
+
+        context['items'] = filtered # todo safe?
 
     return render(request, 'expiry/items.html', context=context)
 
