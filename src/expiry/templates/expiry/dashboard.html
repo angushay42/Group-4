@@ -19,23 +19,30 @@
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 rounded-2xl">
-    <div class="bg-gradient-to-br from-green-400 to-green-600 text-white p-6 rounded-xl shadow-lg">
-        <div class="material-symbols-outlined text-5xl mb-2">kitchen</div>
-        <h3 class="text-xl font-semibold mb-2">Items Stored</h3>
-        <p class="text-3xl font-bold">0</p>
-    </div>
 
-    <div class="bg-gradient-to-br from-green-400 to-green-600 text-white p-6 rounded-xl shadow-lg">
-        <div class="material-symbols-outlined text-5xl mb-2">restaurant_menu</div>
-        <h3 class="text-xl font-semibold mb-2">Expiring Today</h3>
-        <p class="text-3xl font-bold">0</p>
-    </div>
+    <a href="{% url 'items' %}">
+        <div class="bg-gradient-to-br from-green-400 to-green-600 text-white p-6 rounded-xl shadow-lg">
+            <div class="material-symbols-outlined text-5xl mb-2">kitchen</div>
+            <h3 class="text-xl font-semibold mb-2">Items Stored</h3>
+            <p class="text-3xl font-bold">{{totals.total}}</p>
+        </div>
+    </a>
 
-    <div class="bg-gradient-to-br from-green-400 to-green-600 text-white p-6 rounded-xl shadow-lg">
-        <div class="material-symbols-outlined text-5xl mb-2">severe_cold</div>
-        <h3 class="text-xl font-semibold mb-2">Items Frozen</h3>
-        <p class="text-3xl font-bold">0</p>
-    </div>
+    <a href="{% url 'items'%}?filter=soon">
+        <div class="bg-gradient-to-br from-green-400 to-green-600 text-white p-6 rounded-xl shadow-lg">
+            <div class="material-symbols-outlined text-5xl mb-2">restaurant_menu</div>
+            <h3 class="text-xl font-semibold mb-2">Expiring Today</h3>
+            <p class="text-3xl font-bold">{{totals.soon}}</p>
+        </div>
+    </a>
+
+    <a href="{% url 'items'%}?filter=frozen">
+        <div class="bg-gradient-to-br from-green-400 to-green-600 text-white p-6 rounded-xl shadow-lg">
+            <div class="material-symbols-outlined text-5xl mb-2">severe_cold</div>
+            <h3 class="text-xl font-semibold mb-2">Items Frozen</h3>
+            <p class="text-3xl font-bold">{{totals.frozen}}</p>
+        </div>
+    </a>
 </div>
 
 <div class="flex justify-center mt-8">

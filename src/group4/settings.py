@@ -43,7 +43,13 @@ INSTALLED_APPS = [
     'expiry',
     'Users',
     'tailwind',
+    'django_apscheduler',
 ]
+
+# todo check this works
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+APSCHEDULER_RUN_NOW_TIMEOUT = 35  # seconds 
+
 
 TAILWIND_APP_NAME = 'Users'
 

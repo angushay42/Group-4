@@ -5,3 +5,5 @@ notes.md
 *.log
 /logs
 __pycache__/
+/venv-12
+Procfile*

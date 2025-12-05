@@ -1,3 +1,6 @@
 django
 requests
 pyzbar
+tailwind
+django-tailwind[cookiecutter,honcho,reload]
+# django-apscheduler  # todo

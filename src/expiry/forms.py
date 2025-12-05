@@ -96,7 +96,7 @@ class LogininForm(forms.Form):
                 "error at {}: {}".format(timezone.now(), e)
             )
 
-        username = cleaned_data.get('username')  # Changed from 'user' to 'username'
+        username = cleaned_data.get('username')
         password = cleaned_data.get('password')
 
         if username and password:

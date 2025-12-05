@@ -7,28 +7,33 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import EmailValidator, validate_email
-from django.core.handlers.wsgi import WSGIRequest
+from django.http.request import HttpRequest
 from django.contrib.sessions.models import Session
 from django.contrib import messages
+from django.utils import timezone
+from django.db.models import Case, When, IntegerField
 
 from . import forms
 from .models import Item
 
 import logging
+import datetime
 
 
 
 logger = logging.getLogger('views')
 
-def startup(request):
+SOON_THRESH = 10 # todo
+
+def startup(request: HttpRequest):
     logger.debug("startup page viewed")
     return render(request, 'expiry/startup.html')
 
-def logout_view(request):
+def logout_view(request: HttpRequest):
     logout(request)
     return redirect("login")
 
-def login_view(request):
+def login_view(request: HttpRequest):
 
     if request.user.is_authenticated:
         return redirect("dashboard")
@@ -44,7 +49,7 @@ def login_view(request):
         form = forms.LogininForm()
     return render(request, "expiry/login.html", {"login_form" : form})
 
-def signup_view(request):
+def signup_view(request: HttpRequest):
     if request.method == "POST":
         form = forms.RegisterUserForm(request.POST)
         if form.is_valid():
@@ -54,7 +59,7 @@ def signup_view(request):
         form = forms.RegisterUserForm()
     return render(request, 'expiry/signup.html', {"form" : form})
 
-def dashboard(request):
+def dashboard(request: HttpRequest):
     """
     tips from docs:
     - instantiate form objects in views
@@ -69,23 +74,61 @@ def dashboard(request):
         return render(request, "login")     # redirect?
 
 
-    # plan:
-    # if user has any expiries, load them
-    # otherwise, load some "you have no items" default value
-    
     user = User.objects.get(username=request.user.username)  
     items = Item.objects.filter(user=user)
-
-    if not items:
-        logger.debug('items empty')
-        # TODO @charlie return some html that says no items?
     
-    context = {'items': items}
+    # get total, expires soon, frozen
+    expiry_threshold = (
+        timezone.now() +
+        datetime.timedelta(days=SOON_THRESH)
+    )
+
+    context = {
+        'items': items, 
+        "totals": {
+            'frozen': len(items.filter(storage_type=Item.FREEZER)), 
+            'total': len(items), 
+            'soon': len(items.filter(expiry_date__lte=expiry_threshold)),
+        }
+    }
 
     return render(request, 'expiry/dashboard.html', context=context)
 
+
+def items_list(request: HttpRequest):
+    """
+    render all items
+    take a query parameter to filter by
+    error check for query parameters, if a false one given, just ignore it?
+    """
+
+    filter = request.GET.get('filter')
+
+    if not request.user.is_authenticated:
+        return render(request, "login")
+
+    user = User.objects.get(username=request.user.username)  
+    items = Item.objects.filter(user=user)
+
+    # annotate adds extra rows ONLY to QuerySet, shouldn't be
+    # too much overhead
+    # https://docs.djangoproject.com/en/5.2/topics/db/aggregation/
+    # https://docs.djangoproject.com/en/5.2/ref/models/conditional-expressions/
+    filtered = items.annotate(
+        is_frozen=Case(
+            When(storage_type="frozen", then=0),    # 0 is first
+            default=1,
+            output_field=IntegerField(),            # necessary?
+        )
+    ).order_by("is_frozen", "expiry_date")
+
+
+    context = {'items': items}
+
+    return render(request, 'expiry/items.html', context=context)
+
     
-def settings(request):
+def settings(request: HttpRequest):
 
     if not request.user.is_authenticated:   # limits access when not logged in
         return render(request, "login")     # redirect?
