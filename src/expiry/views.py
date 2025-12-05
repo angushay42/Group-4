@@ -1,15 +1,9 @@
-from django.contrib.auth.forms import (
-    UserChangeForm, UserCreationForm, AuthenticationForm
-)
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth import get_user
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.core.validators import EmailValidator, validate_email
-from django.http.request import HttpRequest
-from django.contrib.sessions.models import Session
+from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.http.request import HttpRequest
 from django.utils import timezone
 from django.db.models import Case, When, IntegerField
 
@@ -19,6 +13,7 @@ from .models import Item
 
 import logging
 import datetime
+from apscheduler.triggers.cron import CronTrigger
 
 
 
@@ -132,13 +127,32 @@ def items_list(request: HttpRequest):
 
     return render(request, 'expiry/items.html', context=context)
 
-    
+ 
 def settings(request: HttpRequest):
 
     if not request.user.is_authenticated:  
         return render(request, "login")
 
-    return render(request,'expiry/settings.html')
+    # TODO
+    if request.method == 'POST':
+        # if notifs == off:
+        # delete any notification schedules
+
+        # if notifs == on:
+        #   convert datetime to cron
+        #   if jobs scheduled and different:
+        #       delete jobs
+        #   add jobs
+
+
+        # save settings
+
+        pass
+    _settings = None    # private to avoid overriding 
+
+    context = {'settings': _settings}
+
+    return render(request,'expiry/settings.html', context=context)
 
 def add_item_view(request: HttpRequest):
     if not request.user.is_authenticated:  # limits access when not logged in

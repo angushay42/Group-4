@@ -158,11 +158,3 @@ class AddItem(forms.Form):
             raise forms.ValidationError("Expiry date cannot be in the past")
 
         return cleaned_data
-
-
-
-
-
-
-
-    
