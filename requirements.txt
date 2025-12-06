@@ -3,4 +3,5 @@ requests
 pyzbar
 tailwind
 django-tailwind[cookiecutter,honcho,reload]
-# django-apscheduler  # todo
+django-apscheduler 
+fastapi[standard]

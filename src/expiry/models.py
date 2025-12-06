@@ -50,11 +50,13 @@ class Item(models.Model):
     )
 
 class UserSettings(models.Model):
-    notifcation_preference = models.BooleanField()
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+    notification_enabled = models.BooleanField()
     dark_mode = models.BooleanField()
-
-    # could insert a validator here for extra security
-    # can be null also, if preferences are "OFF"
-    notification_frequency = models.TextField()     # store cron string here
-
+    notification_time = models.TimeField() 
+    notification_day = models.IntegerField()
+    
     #TODO account settings

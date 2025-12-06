@@ -20,7 +20,13 @@
         <a class="glass rounded-xl px-6 py-3 flex items-center gap-7 shadow-xl transition-all duration-300 ease-out
             hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0>">
             Notification Frequency
-            <form class="max-w-[8rem] mx-auto">
+            <!-- @charlie I have added action and method here, unsure what to do lol -->
+            <form 
+                class="max-w-[8rem] mx-auto"
+                
+                action="/settings"
+                method="post"
+            >
                 <label for="time" class="block mb-2 text-sm font-medium text-heading">Select time:</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
@@ -38,8 +44,13 @@
         </a>
     </li>
     <li>
-        <a class="glass rounded-xl px-6 py-3 flex items-center md:gap-3 gap-37 shadow-xl transition-all duration-300 ease-out
-            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0>">
+        <a 
+            class="glass rounded-xl px-6 py-3 flex items-center md:gap-3 gap-37 shadow-xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0>"
+            
+            action="/settings"
+            method="post"
+        >
             Notifications
             <div class="relative inline-block w-11 h-5">
                 <input checked checked id="switch-component-1" type="checkbox"

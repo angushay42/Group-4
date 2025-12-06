@@ -9,13 +9,12 @@ from django.db.models import Case, When, IntegerField
 
 from . import forms
 from .forms import AddItem
-from .models import Item
+from .models import Item, UserSettings
+from group4.settings import SCHED_SERVER_PORT, SCHED_SERVER_URL
 
 import logging
 import datetime
-from apscheduler.triggers.cron import CronTrigger
-
-
+import requests
 
 logger = logging.getLogger('views')
 
@@ -49,7 +48,7 @@ def signup_view(request: HttpRequest):
     if request.method == "POST":
         form = forms.RegisterUserForm(request.POST)
         if form.is_valid():
-            login(request,form.save())
+            login(request, form.save())
             return redirect("dashboard")
     else:
         form = forms.RegisterUserForm()
@@ -90,7 +89,6 @@ def dashboard(request: HttpRequest):
 
     return render(request, 'expiry/dashboard.html', context=context)
 
-
 def items_list(request: HttpRequest):
     """
     render all items
@@ -126,31 +124,73 @@ def items_list(request: HttpRequest):
         context['items'] = filtered # todo safe?
 
     return render(request, 'expiry/items.html', context=context)
-
  
 def settings(request: HttpRequest):
 
     if not request.user.is_authenticated:  
         return render(request, "login")
+    
+    # load user settings
+    user = User.objects.filter(username=request.user.username)
 
-    # TODO
+    # private to avoid overriding 
+    _settings: UserSettings = UserSettings.objects.filter(user=user)
+
     if request.method == 'POST':
-        # if notifs == off:
-        # delete any notification schedules
+        form = forms.SettingsForm(request.POST)
 
-        # if notifs == on:
-        #   convert datetime to cron
-        #   if jobs scheduled and different:
-        #       delete jobs
-        #   add jobs
+        if form.is_valid():
+            if form.cleaned_data['notification_preference'] == False:
+                # todo delete jobs
+                pass
+            else:
+                notif_time: datetime.time =\
+                    form.cleaned_data['notification_time']
+                
+                notif_day: int = form.cleaned_data['notification_day']
 
+                if not (
+                    notif_time == _settings.notification_time
+                    and notif_day == _settings.notification_day
+                ):
+                    # idea if we add functionality for customising data view,\
+                    # we may need to delete old jobs
 
-        # save settings
+                    # todo wrap this as a function
+                    # make a request to scheduler server
+                    url = f"http://{SCHED_SERVER_URL}:{SCHED_SERVER_PORT}"
+                    params = {
+                        'user': user.name,
+                        'time': notif_time, # bug too complex to pass?
+                        'day_of_week': notif_day
+                    }
 
-        pass
-    _settings = None    # private to avoid overriding 
+                    response = requests.get(
+                        url=url,
+                        params=params,
+                    )
+                    # check that response is OK
+                    if not response.status_code == 200:
+                        # todo create custom exception for this app
+                        raise TypeError
+                    pass
+                
+            # save settings
+            notif_enabled = form.cleaned_data['notification_preference']
+            _settings.notification_enabled = notif_enabled
+            _settings.notification_day = notif_day if notif_enabled else None
+            _settings.notification_time = notif_time if notif_enabled else None
+            _settings.dark_mode = form.cleaned_data['dark_mode']
 
-    context = {'settings': _settings}
+            _settings.save()
+
+    else:
+        form = forms.SettingsForm()
+
+    context = {
+        'settings': _settings,
+        'form': form
+    }
 
     return render(request,'expiry/settings.html', context=context)
 

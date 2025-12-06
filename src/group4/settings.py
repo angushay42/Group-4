@@ -19,6 +19,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 LOGS_DIR = BASE_DIR / 'logs'
 LOGS_DIR.mkdir(exist_ok=True)
 
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -48,8 +50,9 @@ INSTALLED_APPS = [
 
 # todo check this works
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
-APSCHEDULER_RUN_NOW_TIMEOUT = 35  # seconds 
-
+APSCHEDULER_RUN_NOW_TIMEOUT = 35    # seconds 
+SCHED_SERVER_URL = "0.0.0.0"        # localhost
+SCHED_SERVER_PORT = 3131            # lucky number
 
 TAILWIND_APP_NAME = 'Users'
 

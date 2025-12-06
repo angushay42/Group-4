@@ -158,3 +158,28 @@ class AddItem(forms.Form):
             raise forms.ValidationError("Expiry date cannot be in the past")
 
         return cleaned_data
+
+class SettingsForm(forms.Form):
+    notifcation_preference = forms.BooleanField(
+
+        widget=forms.CheckboxInput(
+            # TODO @charlie styling here?
+        )
+    )
+    # todo @charlie I have chosen an integer 0-6, but
+    # users would prefer something more readable (mon, tues, etc)
+    notifcation_day = forms.ChoiceField(
+        # TODO @charlie day of week
+        
+    )
+    notification_time = forms.TimeField(
+        widget=forms.TimeInput(
+            # TODO @charlie styling, appropriate input type?
+        )
+    )
+
+    dark_mode = forms.BooleanField(
+        widget=forms.CheckboxInput(
+            #TODO @charlie styling
+        )
+    )
