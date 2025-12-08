@@ -1,6 +1,6 @@
 import logging
 import uvicorn
-from threading import Thread
+from threading import Thread, Event
 from fastapi import FastAPI
 
 from django.conf import settings
