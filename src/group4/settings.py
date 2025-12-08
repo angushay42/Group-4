@@ -19,8 +19,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 LOGS_DIR = BASE_DIR / 'logs'
 LOGS_DIR.mkdir(exist_ok=True)
 
-
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -31,7 +29,6 @@ SECRET_KEY = 'django-insecure-_63i9njj5oiin9+4e)in5ms08-1(qu)hob5bwt(j25d6^6mwt#
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -168,6 +165,11 @@ LOGGING = {
             "class": "logging.FileHandler",
             "filename": LOGS_DIR / "forms.log",
         },
+        "jobs_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": LOGS_DIR / "jobs.log",
+        },
         "console": {
             "level": "INFO",
             "class": "logging.StreamHandler",
@@ -186,6 +188,11 @@ LOGGING = {
         },
         "tests": {
             "handlers": ["tests_file", "console"],
+            "level": "DEBUG",
+            "propogate": False,
+        },
+        "jobs": {
+            "handlers": ["jobs_file", "console"],
             "level": "DEBUG",
             "propogate": False,
         },

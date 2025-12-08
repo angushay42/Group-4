@@ -16,8 +16,7 @@ from expiry.routers import router
 from expiry.scheduler_inst import get_scheduler, set_scheduler
 from group4.settings import SCHED_SERVER_PORT, SCHED_SERVER_URL
 
-#todo
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("jobs")
 
 app = FastAPI()
 app.include_router(router=router)
@@ -41,13 +40,24 @@ def delete_old_job_executions(max_age=604_800):
 class Command(BaseCommand):
     help = "Runs APScheduler."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "-t", "--test",         # names
+            action="store_true",    # defaults to true if given
+        )
+
     def handle(self, *args, **options):
+        logger.debug(
+            f"argument check: {options["test"]}"
+        )
+        self.test: bool = options["test"]
+
         # init
         set_scheduler(BlockingScheduler(timezone=settings.TIME_ZONE))
         sched = get_scheduler()
         sched.add_jobstore(DjangoJobStore(), "default")
 
-        # from docs, may want to remove? 
+        # todo from docs, may want to remove? 
         sched.add_job(
             delete_old_job_executions,
             trigger=CronTrigger(
@@ -73,11 +83,13 @@ class Command(BaseCommand):
             # spin up scheduler
             sched_thread.start()
 
+            # todo disable info logging, reroute to file instead
             # spin up server (needs to be main thread)
             uvicorn.run(
                 app=app,
                 host=SCHED_SERVER_URL,
-                port=SCHED_SERVER_PORT
+                port=SCHED_SERVER_PORT,
+                log_level="debug"
             )
             
         except KeyboardInterrupt:

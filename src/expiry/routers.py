@@ -1,14 +1,14 @@
-from fastapi.routing import APIRouter
+import datetime
+import logging
 from fastapi import Depends
+from fastapi.routing import APIRouter
 from typing import Annotated
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
-import datetime
 
 from expiry.scheduler_inst import get_scheduler
 
-# function to send notification
-
+logger = logging.getLogger("jobs")
 router = APIRouter()
 
 # idea could use request body if we need something heavier
