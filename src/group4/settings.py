@@ -30,7 +30,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -48,8 +47,9 @@ INSTALLED_APPS = [
 
 # todo check this works
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
-APSCHEDULER_RUN_NOW_TIMEOUT = 35  # seconds 
-
+APSCHEDULER_RUN_NOW_TIMEOUT = 35    # seconds 
+SCHED_SERVER_URL = "0.0.0.0"        # localhost
+SCHED_SERVER_PORT = 3131            # lucky number
 
 TAILWIND_APP_NAME = 'Users'
 
@@ -165,6 +165,11 @@ LOGGING = {
             "class": "logging.FileHandler",
             "filename": LOGS_DIR / "forms.log",
         },
+        "jobs_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": LOGS_DIR / "jobs.log",
+        },
         "console": {
             "level": "INFO",
             "class": "logging.StreamHandler",
@@ -183,6 +188,11 @@ LOGGING = {
         },
         "tests": {
             "handlers": ["tests_file", "console"],
+            "level": "DEBUG",
+            "propogate": False,
+        },
+        "jobs": {
+            "handlers": ["jobs_file", "console"],
             "level": "DEBUG",
             "propogate": False,
         },

@@ -1,9 +1,17 @@
 import logging
+import threading
+import subprocess
+import requests
+import time
+import os
+
+from expiry.routers import PostFunction
+from group4.settings import SCHED_SERVER_PORT, SCHED_SERVER_URL
+
 from django.test import TestCase
+from django.core import management
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
-
-from .views import login_view, startup
 
 # Create your tests here.
 # https://docs.djangoproject.com/en/5.2/topics/testing/overview/
@@ -74,8 +82,8 @@ class LoginTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], '/dashboard')
 
-    def test_login_rememeber_me(self):
-        # todo check if session is created
+    def test_login_remember_me(self):
+        # check if session is created
         response = self.client.post(
             "/login", {
                 'email': self.test_email,
@@ -86,3 +94,83 @@ class LoginTestCase(TestCase):
 
         self.assertTrue(100000 <= self.client.session.get_expiry_age())
         self.assertEqual(response.status_code, 302)
+
+
+"""
+I want to test:
+- jobs are created
+- job server works
+    - receives requests
+    - handles errors okay
+    - has a log file that outputs as expected
+- scheduler runs a simple function
+- scheduler runs a function with 1 argument
+- scheduler runs a function with complex argument (DateTime)
+"""
+
+class SchedulerTestCase(TestCase):
+    pass
+
+class JobServerTestCase(TestCase):
+    BASE_URL = f"http://{SCHED_SERVER_URL}:{SCHED_SERVER_PORT}" # is http needed?
+
+    @classmethod
+    def setUpClass(cls):
+        logger.debug(
+            f"setUp called"
+        )
+        cls.serv_proc = subprocess.Popen(
+            ["python3", "manage.py", "runapscheduler", "-t"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
+
+        # can't signal, wrong application for threads
+        # cls.serv_thread = threading.Thread(
+        #     target=management.call_command,
+        #     args=["runapscheduler"],
+        #     daemon=True
+        # )
+
+        # cls.serv_thread.start()
+
+        time.sleep(1)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.serv_proc.terminate()
+    
+    def test_health_check(self):
+        logger.debug(
+            f"health test called"
+        )
+        response = requests.get(
+            f"{self.BASE_URL}/health"
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_add_job(self):
+        logger.debug(
+            f"add_job test called"
+        )
+        headers = {
+            "Content-type":     "Application/json",
+            "Authorisation":    os.environ["API_KEY"]
+        }
+        
+        test_data = {
+            "name": "my_func",
+            "args": []
+        }
+
+        url = self.BASE_URL + '/add_job'
+
+        response = requests.post(
+            url=url,
+            headers=headers,
+            json=test_data
+        )
+        self.assertEqual(response.status_code, 200)
+        logger.debug(
+            f"add_job response: {response.text}"
+        )

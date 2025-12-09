@@ -48,3 +48,15 @@ class Item(models.Model):
         max_length=4,
         choices=STORAGE_TYPE_CHOICES
     )
+
+class UserSettings(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+    notification_enabled = models.BooleanField()
+    dark_mode = models.BooleanField()
+    notification_time = models.TimeField() 
+    notification_day = models.IntegerField()
+    
+    #TODO account settings
