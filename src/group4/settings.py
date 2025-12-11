@@ -27,6 +27,7 @@ SECRET_KEY = 'django-insecure-_63i9njj5oiin9+4e)in5ms08-1(qu)hob5bwt(j25d6^6mwt#
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+ENV_PATH = BASE_DIR / 'expiry/.env/'
 
 ALLOWED_HOSTS = []
 

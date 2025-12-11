@@ -1,12 +1,14 @@
 import logging
-import threading
 import subprocess
 import requests
 import time
 import os
+import dotenv
 
 from expiry.routers import PostFunction
-from group4.settings import SCHED_SERVER_PORT, SCHED_SERVER_URL
+from group4.settings import (
+    SCHED_SERVER_PORT, SCHED_SERVER_URL, ENV_PATH
+)
 
 from django.test import TestCase
 from django.core import management
@@ -18,6 +20,14 @@ from django.contrib.auth.models import User
 # https://docs.djangoproject.com/en/5.2/topics/testing/tools/  <-- Client
 
 logger = logging.getLogger("tests")
+
+# environment init
+logger.debug(
+    f"{__name__} setting up environment..."
+)
+
+os.environ.update(dotenv.dotenv_values(ENV_PATH))
+
 
 class StartupTestCase(TestCase):
     def setUp(self):
@@ -117,7 +127,11 @@ class JobServerTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         logger.debug(
-            f"setUp called"
+            f"Setting up {cls.__name__}"
+        )
+
+        logger.debug(
+            f"Starting apscheduler subprocess..."
         )
         cls.serv_proc = subprocess.Popen(
             ["python3", "manage.py", "runapscheduler", "-t"],
@@ -125,19 +139,32 @@ class JobServerTestCase(TestCase):
             stdout=subprocess.PIPE,
         )
 
-        # can't signal, wrong application for threads
-        # cls.serv_thread = threading.Thread(
-        #     target=management.call_command,
-        #     args=["runapscheduler"],
-        #     daemon=True
-        # )
+        logger.debug(
+            f"Getting API key..."
+        )
+        api_key = os.environ.get("API_KEY")
+        if not api_key:
+            logger.debug(
+                f"ERROR.{__name__}: API ket not found"
+            )
+            cls.fail(
+                cls, 
+                "Api key not found"
+            )
 
-        # cls.serv_thread.start()
-
+        cls.headers = {
+            "Content-type":     "Application/json",
+            "Authorization":    f"Bearer {api_key}"
+        }
+        
+        # wait for init
         time.sleep(1)
 
     @classmethod
     def tearDownClass(cls):
+        logger.debug(
+            f"Tearing down {cls.__name__}"
+        )
         cls.serv_proc.terminate()
     
     def test_health_check(self):
@@ -145,7 +172,8 @@ class JobServerTestCase(TestCase):
             f"health test called"
         )
         response = requests.get(
-            f"{self.BASE_URL}/health"
+            f"{self.BASE_URL}/health",
+            headers=self.headers
         )
         self.assertEqual(response.status_code, 200)
 
@@ -153,10 +181,6 @@ class JobServerTestCase(TestCase):
         logger.debug(
             f"add_job test called"
         )
-        headers = {
-            "Content-type":     "Application/json",
-            "Authorisation":    os.environ["API_KEY"]
-        }
         
         test_data = {
             "name": "my_func",
@@ -167,7 +191,7 @@ class JobServerTestCase(TestCase):
 
         response = requests.post(
             url=url,
-            headers=headers,
+            headers=self.headers,
             json=test_data
         )
         self.assertEqual(response.status_code, 200)
