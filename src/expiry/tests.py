@@ -44,7 +44,7 @@ class LoginTestCase(TestCase):
     def setUp(self):
         self.session_timeout = 1209600  # in seconds
         self.test_email ="working@email.com"
-        self.test_pass = "sosecret123"
+        self.test_pass = os.environ['TEST_PASS']
 
         self.user = User.objects.create_user(
             username=self.test_email,  # feels hacky

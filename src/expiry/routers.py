@@ -37,6 +37,7 @@ class PostFunction(BaseModel):
     args: list
 
 
+# todo GET RID OF THIS AND DO MULTIPLE SINGLE ENDPOINTS
 @router.post('/add_job')
 async def add_job( 
     job_function: PostFunction,     # POST request body

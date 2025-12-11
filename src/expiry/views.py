@@ -131,7 +131,7 @@ def settings(request: HttpRequest):
         return render(request, "login")
     
     # load user settings
-    user = User.objects.filter(username=request.user.username)
+    user = User.objects.get(username=request.user.username)
 
     # private to avoid overriding 
     _settings: UserSettings = UserSettings.objects.filter(user=user)
