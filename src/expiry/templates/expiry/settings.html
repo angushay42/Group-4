@@ -12,48 +12,71 @@
 <ul class="flex flex-col gap-6 mt-8 rounded-2xl">
     <li>
         <a class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-xl transition-all duration-300 ease-out
-            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0>">
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
             Account Settings
         </a>
     </li>
     <li>
-        <a class="glass rounded-xl px-6 py-3 flex items-center gap-7 shadow-xl transition-all duration-300 ease-out
-            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0>">
-            Notification Frequency
-            <!-- @charlie I have added action and method here, unsure what to do lol -->
-            <form 
-                class="max-w-[8rem] mx-auto"
-                
-                action="/settings"
-                method="post"
-            >
-                <label for="time" class="block mb-2 text-sm font-medium text-heading">Select time:</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-                        <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-                             height="24" fill="none" viewBox="0 0 24 24">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                        </svg>
-                    </div>
-                    <input type="time" id="time"
-                           class="block w-full p-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
-                           min="09:00" max="18:00" value="00:00" required/>
+        <div class="glass rounded-xl px-6 py-4 shadow-xl">
+            <label class="block mb-3 text-sm text-heading">Notification Days</label>
+            <form method="post" action="">
+                {% csrf_token %}
+                <div class="flex flex-wrap gap-2">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="notification_days" value="0"
+                               class="w-4 h-4 text-green-600 bg-neutral-secondary-medium border-default-medium rounded focus:ring-green-500 focus:ring-2"
+                               > <!--This is where you need the statement to link to backend  -->
+                        <span class="ml-2 text-sm text-heading">Mon</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="notification_days" value="1"
+                               class="w-4 h-4 text-green-600 bg-neutral-secondary-medium border-default-medium rounded focus:ring-green-500 focus:ring-2"
+                               >  <!--This is where you need the statement to link to backend  -->
+                        <span class="ml-2 text-sm text-heading">Tue</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="notification_days" value="2"
+                               class="w-4 h-4 text-green-600 bg-neutral-secondary-medium border-default-medium rounded focus:ring-green-500 focus:ring-2"
+                               ><!--This is where you need the statement to link to backend  -->
+                        <span class="ml-2 text-sm text-heading">Wed</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="notification_days" value="3"
+                               class="w-4 h-4 text-green-600 bg-neutral-secondary-medium border-default-medium rounded focus:ring-green-500 focus:ring-2"
+                               ><!--This is where you need the statement to link to backend  -->
+                        <span class="ml-2 text-sm text-heading">Thu</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="notification_days" value="4"
+                               class="w-4 h-4 text-green-600 bg-neutral-secondary-medium border-default-medium rounded focus:ring-green-500 focus:ring-2"
+                               ><!--This is where you need the statement to link to backend  -->
+                        <span class="ml-2 text-sm text-heading">Fri</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="notification_days" value="5"
+                               class="w-4 h-4 text-green-600 bg-neutral-secondary-medium border-default-medium rounded focus:ring-green-500 focus:ring-2"
+                               ><!--This is where you need the statement to link to backend  -->
+                        <span class="ml-2 text-sm text-heading">Sat</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" name="notification_days" value="6"
+                               class="w-4 h-4 text-green-600 bg-neutral-secondary-medium border-default-medium rounded focus:ring-green-500 focus:ring-2"
+                               ><!--This is where you need the statement to link to backend  -->
+                        <span class="ml-2 text-sm text-heading">Sun</span>
+                    </label>
                 </div>
+                <button type="submit" class="mt-3 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors">
+                    Save
+                </button>
             </form>
-        </a>
+        </div>
     </li>
     <li>
-        <a 
-            class="glass rounded-xl px-6 py-3 flex items-center md:gap-3 gap-37 shadow-xl transition-all duration-300 ease-out
-            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0>"
-            
-            action="/settings"
-            method="post"
-        >
+        <a class="glass rounded-xl px-6 py-3 flex items-center md:gap-3 gap-37 shadow-xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
             Notifications
             <div class="relative inline-block w-11 h-5">
-                <input checked checked id="switch-component-1" type="checkbox"
+                <input checked id="switch-component-1" type="checkbox"
                        class="peer appearance-none w-11 h-5 bg-slate-100 rounded-full checked:bg-slate-800 cursor-pointer transition-colors duration-300"/>
                 <label for="switch-component-1"
                        class="absolute top-0 left-0 w-5 h-5 bg-white rounded-full border border-slate-300 shadow-sm transition-transform duration-300 peer-checked:translate-x-6 peer-checked:border-slate-800 cursor-pointer">
@@ -63,10 +86,10 @@
     </li>
     <li>
         <a class="glass rounded-xl px-6 py-3 flex items-center md:gap-3 gap-40 shadow-xl transition-all duration-300 ease-out
-            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0>">
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
             Dark Mode
             <div class="relative inline-block w-11 h-5">
-                <input checked checked id="switch-component-2" type="checkbox"
+                <input checked id="switch-component-2" type="checkbox"
                        class="peer appearance-none w-11 h-5 bg-slate-100 rounded-full checked:bg-slate-800 cursor-pointer transition-colors duration-300"/>
                 <label for="switch-component-2"
                        class="absolute top-0 left-0 w-5 h-5 bg-white rounded-full border border-slate-300 shadow-sm transition-transform duration-300 peer-checked:translate-x-6 peer-checked:border-slate-800 cursor-pointer">
@@ -76,7 +99,7 @@
     </li>
     <li>
         <a class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-xl transition-all duration-300 ease-out
-            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0>"
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
            href="logout"
         >
             Log Out

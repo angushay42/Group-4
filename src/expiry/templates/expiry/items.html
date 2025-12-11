@@ -2,6 +2,16 @@
 
 {% block content %}
 
+<div class="relative bg-gradient-to-br from-green-400 to-green-600 -m-8 mb-0 p-8 pb-6 md:rounded-2xl">
+    <div class="flex justify-between items-center">
+        <h1 class="text-white text-3xl md:text-4xl md:font-bold">My Items</h1>
+        <button class="relative bg-white/20 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white/30 transition-all">
+            <div class="material-symbols-outlined text-white text-2xl">notifications</div>
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span>
+        </button>
+    </div>
+</div>
+
 <!-- todo sort by drop down @charlie -->
 {% for item in items %}
     <!-- load item contents, dunno how this should be styled -->
