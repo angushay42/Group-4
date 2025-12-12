@@ -213,5 +213,10 @@ LOGGING = {
             "level": "DEBUG",
             "propogate": False,
         },
+        "forms": {
+            "handlers": ["forms_file", "console"],
+            "level": "DEBUG",
+            "propogate": False,
+        },
     },
 }

@@ -15,6 +15,7 @@ from group4.settings import SCHED_SERVER_PORT, SCHED_SERVER_URL
 import logging
 import datetime
 import requests
+import json
 
 logger = logging.getLogger('views')
 
@@ -30,6 +31,7 @@ def logout_view(request: HttpRequest):
 
 def login_view(request: HttpRequest):
 
+    code = 200
     if request.user.is_authenticated:
         return redirect("dashboard")
 
@@ -40,9 +42,39 @@ def login_view(request: HttpRequest):
             login(request, user)
             messages.success(request, "Logged in successfully!")
             return redirect("dashboard")
+        else:
+            logger.debug(
+                f"login form invalid"
+            )
+            logger.debug(
+                f"errors: {form.errors.as_json()}"
+            )
+            try:
+                errors: dict = json.loads(form.errors.as_json())
+            except:
+                logger.debug(
+                    f"error getting errors..."
+                )
+                ValueError("fatal")
+
+            errors = errors.get('__all__')
+
+            logger.debug(
+                f"logic test: {any("Invalid" in message['message'] for message in errors)}"
+            )
+
+            if any("Invalid" in message['message'] for message in errors):
+                code = 401
+            else:
+                code = 400
     else:
         form = forms.LogininForm()
-    return render(request, "expiry/login.html", {"login_form" : form})
+    return render(
+        request, 
+        "expiry/login.html", 
+        {"login_form" : form}, 
+        status=code
+    )
 
 def signup_view(request: HttpRequest):
     if request.method == "POST":

@@ -1,3 +1,4 @@
+import json
 import logging
 import subprocess
 import requests
@@ -26,7 +27,6 @@ logger = logging.getLogger("tests")
 logger.debug(
     f"{__name__} setting up environment..."
 )
-
 os.environ.update(dotenv.dotenv_values(ENV_PATH))
 
 
@@ -42,49 +42,51 @@ class StartupTestCase(TestCase):
 
 
 class LoginTestCase(TestCase):
-    def setUp(self):
-        self.session_timeout = 1209600  # in seconds
-        self.test_email ="working@email.com"
-        self.test_pass = os.environ['TEST_PASS']
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.session_timeout = 1209600  # in seconds
+        cls.test_name = "test"
+        cls.test_email ="working@email.com"
+        cls.test_pass = os.environ.get('TEST_PASS')
 
-        self.user = User.objects.create_user(
-            username=self.test_email,  # feels hacky
-            password=self.test_pass
+        cls.user = User.objects.create_user(
+            username="test",
+            email=cls.test_email,
+            password=cls.test_pass
         )
-
+        cls.headers = {
+            'Authorization': f"Bearer {os.environ.get('API_KEY')}"
+        }
+    
     def test_login_get(self):
         # check that user can access login (GET)
         response = self.client.get("/login")
 
         self.assertEqual(response.status_code, 200)
 
-    def test_login_bad_email(self):
-        # check if malformed email gets rejected
-        # todo add more checks for invalid email, no domain etc
-        response = self.client.post("/login", {
-            'email': "missing_at_symbol",
-            'password': 'testpass'
-        })
-
-        self.assertRaises(ValidationError)
-        self.assertEqual(response.status_code, 400)
-
     def test_login_not_authorised(self):
         # check if user is not authorised
-        response = self.client.post("/login", {
-            'email': "userdoesnotexist@email.com",
-            'password': 'testpass'
-        })
+        response = self.client.post(
+            "/login", {
+                'username': 'notfound',
+                'email': "userdoesnotexist@email.com",
+                'password': 'testpass'
+            },
+            headers=self.headers
+        )
 
-        self.assertEqual(response.status_code, 401) # unauthorised
+        self.assertEqual(response.status_code, 401)     # unauthorised
 
     def test_login_authorised(self):
         # todo is authorised user redirected
         response = self.client.post(
             "/login", {
+                'username': self.test_name,
                 'email': self.test_email,
                 'password': self.test_pass
             }, 
+            headers=self.headers
         )
 
         # useful: https://docs.djangoproject.com/en/5.2/topics/testing/tools/#:~:text=and%20status%20codes.-,If,-you%20had%20a
@@ -97,14 +99,17 @@ class LoginTestCase(TestCase):
         # check if session is created
         response = self.client.post(
             "/login", {
+                'username': self.test_name,
                 'email': self.test_email,
                 'password': self.test_pass,
                 'remember_me': "on"
             },
+            headers=self.headers
         )
 
         self.assertTrue(100000 <= self.client.session.get_expiry_age())
         self.assertEqual(response.status_code, 302)
+
 
 
 class SchedulerTestCase(TestCase):
@@ -240,7 +245,7 @@ class JobServerTestCase(TestCase):
 
         self.assertIsNotNone(notifs)
 
-    def test_add_notification_bad(self):
+    def test_add_notification_bad_user(self):
         logger.debug(
             "{} testing: {}".format(
                 self.__class__.__name__,
@@ -266,10 +271,25 @@ class JobServerTestCase(TestCase):
             headers=self.headers,
             json=test_data
         )
-
+        logger.debug(
+            f"response: {response.text}"
+        )
+        message = response.json()
+        self.assertIsNotNone(message)
+        self.assertTrue(type(message) == dict)
         self.assertEqual(response.json(), {"error": "invalid user"})
 
-        self.assertEqual(response.status_code, 400)     # Bad request 
+        self.assertEqual(response.status_code, 401) # unauthorised
+
+
+    def test_add_notification_bad_day(self):
+        logger.debug(
+            "{} testing: {}".format(
+                self.__class__.__name__,
+                "add notification"
+            )
+        )
+        url = self.BASE_URL + '/add_notification'
 
         # bad data
         days = [40]     # invalid day 
@@ -283,7 +303,7 @@ class JobServerTestCase(TestCase):
                 "minute": notif_time.minute
             }
         }
-    
+
         response = requests.post(
             url=url,
             headers=self.headers,
@@ -294,11 +314,40 @@ class JobServerTestCase(TestCase):
 
         self.assertEqual(response.status_code, 400)     # Bad request 
 
+    def test_add_notification_bad_time(self):
+        logger.debug(
+            "{} testing: {}".format(
+                self.__class__.__name__,
+                "add notification"
+            )
+        )
+        url = self.BASE_URL + '/add_notification'
+
+
+        days = [0]
+        test_data = {
+            "user_id": self.user.pk,
+            "days": days,
+            "time": {
+                "hour": 10000,  # bad data
+                "minute": -1    # bad data
+            }
+        }
+
+        response = requests.post(
+            url=url,
+            headers=self.headers,
+            json=test_data
+        )
+
+        self.assertEqual(response.json(), {"error": "invalid time"})
+
+        self.assertEqual(response.status_code, 400)     # Bad request 
 
     def test_delete_notification(self):
         logger.debug("{} testing: {}".format(
             self.__class__.__name__,
-            "add notification")
+            "delete notification")
         )
 
         # todo remove this

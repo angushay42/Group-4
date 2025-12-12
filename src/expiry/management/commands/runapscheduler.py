@@ -4,7 +4,9 @@ import os
 import time
 import dotenv
 from threading import Thread
-from fastapi import FastAPI, Request, HTTPException, Depends
+from fastapi import (
+    FastAPI, Request, HTTPException, Depends, Response
+)
 
 from django.conf import settings
 from django.utils import timezone
@@ -35,6 +37,7 @@ logger.debug(
     f"env path: {ENV_PATH}"
 )
 
+# this should be moved to a separate file, too tightly coupled
 app = FastAPI()
 app.include_router(router=router)
 
@@ -64,16 +67,16 @@ async def auth_requests(request: Request, call_next):
         or authorization.split(' ', 1)[1] != api_key
     ):     
         logger.debug(
-            f"ERROR: Authorisation header \
-            {
-                "not found" if not authorization else "invalid"
-            }"
+            f"ERROR: Authorisation header {
+                "not found" if not authorization 
+                else "invalid"}"
         )
         logger.debug(
             f"auth: {authorization.split(' ', 1)[1]}, key: {api_key}"
         )
-        raise HTTPException(status_code=403, detail="Unauthorised")
-
+        # can't raise exception in middleware. good to know
+        return Response(status_code=403)
+        
     response = await call_next(request)
     return response
 

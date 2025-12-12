@@ -2,20 +2,20 @@ import datetime
 import logging
 import dotenv
 import os
-import cron_converter as cronc
 
+
+from typing import Annotated
 from pydantic import BaseModel
 from fastapi import (
     Depends, Header, HTTPException, Response, status
 )
 from fastapi.routing import APIRouter
 from asgiref.sync import sync_to_async
-from typing import Annotated
 from apscheduler.schedulers.blocking import BaseScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from group4.settings import ENV_PATH
-from expiry.models import NotifJob
+from expiry.models import NotifJob, User
 from expiry.notifications import send_notification
 from expiry.scheduler_inst import get_scheduler
 
@@ -70,12 +70,27 @@ async def add_notification(
         return {"error": "invalid time"}
     
 
-    if not notif.days or len(notif.days) > 7:
+    if (not notif.days
+        or len(notif.days) > 7 
+        or not (
+            min(notif.days) >= 0 
+            and max(notif.days) < 7)
+        ):
         logger.debug(
             f"{__name__}.ERROR: invalid day value(s)"
         )
         response.status_code = status.HTTP_400_BAD_REQUEST
-        return {"error": "invalid days"}
+        return {"error": "invalid day"}
+
+    try:
+        user = await sync_to_async(User.objects.get)(id=notif.user_id)
+    except User.DoesNotExist:
+        logger.debug(
+            f"ERROR: Invalid username"
+        )
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+        return {"error": "invalid user"}
+
 
     jobs = []
     logger.debug(
@@ -93,7 +108,7 @@ async def add_notification(
             hour="{0:2d}".format(notif_time.hour),
             day_of_week="{}".format(day)
         )
-        job = sync_to_async(scheduler.add_job)(
+        job = await sync_to_async(scheduler.add_job)(
             func=send_notification,
             trigger=cron,
             args=[notif.user_id],   # needed to be list
@@ -111,7 +126,7 @@ async def add_notification(
         f"{__name__}: jobs created"
     )
     
-    objs = sync_to_async(NotifJob.objects.bulk_create)(
+    objs = await sync_to_async(NotifJob.objects.bulk_create)(
         [NotifJob(
             user_id=notif.user_id,
             job_id=job
@@ -124,8 +139,9 @@ async def add_notification(
         )
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return {"error": "server error"}
+    
     logger.debug(
-        f"{__name__}: objects created"
+        f"{__name__}: objects created: {objs}"
     )
 
     response.status_code = status.HTTP_201_CREATED
@@ -137,8 +153,9 @@ async def health(scheduler = Depends(get_scheduler)):
     logger.debug(
         f"/health requested"
     )
+    # todo more info if needed
     return {
-        "message": f"{"in " if scheduler == None else "" }active"
+        "status": "active"
     }
 
 
