@@ -2,16 +2,21 @@ import datetime
 import logging
 import dotenv
 import os
+import cron_converter as cronc
 
 from pydantic import BaseModel
-from fastapi import Depends, Header, HTTPException
+from fastapi import (
+    Depends, Header, HTTPException, Response, status
+)
 from fastapi.routing import APIRouter
+from asgiref.sync import sync_to_async
 from typing import Annotated
-from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.schedulers.blocking import BaseScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from group4.settings import ENV_PATH
-
+from expiry.models import NotifJob
+from expiry.notifications import send_notification
 from expiry.scheduler_inst import get_scheduler
 
 
@@ -23,58 +28,109 @@ logger.debug(
 os.environ.update(dotenv.dotenv_values(ENV_PATH))
 
 router = APIRouter()
-"""
-Problem statement:
-Ask job server to add a job to be scheduled
 
+class NotificationPackage(BaseModel):
+    user_id: int
+    days: list[int]
+    time: dict[str, int]
 
-how do we know what function is valid?
-how do we authenticate?
-"""
-
-class PostFunction(BaseModel):
-    name: str
-    args: list
-
-
-# todo GET RID OF THIS AND DO MULTIPLE SINGLE ENDPOINTS
-@router.post('/add_job')
-async def add_job( 
-    job_function: PostFunction,     # POST request body
-):    
-    # check that job selected is valid
-        # todo how to check function exists within module?
-    # check that time requested is valid
-    # check that parameters are valid
-    # add job 
-    
-    # what do we do with job_id? 
-    return {"message": "job done"}
 
 # idea could use request body if we need something heavier
-@router.post('/schedule_notify')
-async def schedule_notify(
-    user,
-    time: datetime.time,
-    day_of_week: int,
-    scheduler: Annotated[BlockingScheduler, Depends(get_scheduler)]
+@router.post('/add_notification')
+async def add_notification(
+    notif: NotificationPackage,
+    scheduler: Annotated[
+        BaseScheduler, Depends(get_scheduler)
+    ],
+    response: Response    
 ):
     logger.debug(
-        f"/schedule_notify requested"
+        f"{__name__}: /add_notification requested"
     )
-    cron = CronTrigger(
-        year="*",
-        month="*", 
-        second="{:02d}".format(time.second),
-        minute="{:02d}".format(time.minute),
-        day_of_week="{}".format(day_of_week)
+
+    logger.debug(
+        f"{__name__} getting time"
     )
-    job = scheduler.add_job(
-        func=some_func, #todo
-        trigger=cron,
-        args=user,
+    notif_minute = notif.time.get('minute')
+    notif_hour = notif.time.get('hour')
+
+    try:
+        notif_time = datetime.time(
+            hour=notif_hour,    
+            minute=notif_minute
+        )
+        logger.debug(
+            f"{__name__}: time creation success"
+        )
+    except (ValueError, TypeError) as e:
+        logger.debug(
+            f"{__name__}.ERROR: invalid time values"
+        )
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return {"error": "invalid time"}
+    
+
+    if not notif.days or len(notif.days) > 7:
+        logger.debug(
+            f"{__name__}.ERROR: invalid day value(s)"
+        )
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return {"error": "invalid days"}
+
+    jobs = []
+    logger.debug(
+        f"{__name__}: creating job(s)"
     )
-    # todo might want to return something here?
+    #bug
+    # potentially dangerous, make sure list size is limited and validated
+    for day in notif.days:
+        
+        cron = CronTrigger(
+            year="*",
+            month="*", 
+            second="00",
+            minute="{:02d}".format(notif_time.minute),
+            hour="{0:2d}".format(notif_time.hour),
+            day_of_week="{}".format(day)
+        )
+        job = sync_to_async(scheduler.add_job)(
+            func=send_notification,
+            trigger=cron,
+            args=[notif.user_id],   # needed to be list
+        )
+        jobs.append(job)
+    
+    if len(jobs) != len(notif.days):
+        logger.debug(
+            f"{__name__}.ERROR: error creating jobs"
+        )
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        return {"error": "server error"}
+
+    logger.debug(
+        f"{__name__}: jobs created"
+    )
+    
+    objs = sync_to_async(NotifJob.objects.bulk_create)(
+        [NotifJob(
+            user_id=notif.user_id,
+            job_id=job
+        ) for job in jobs]
+    )
+
+    if not objs:
+        logger.debug(
+            f"{__name__}.ERROR: error creating db jobs"
+        )
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        return {"error": "server error"}
+    logger.debug(
+        f"{__name__}: objects created"
+    )
+
+    response.status_code = status.HTTP_201_CREATED
+    return {"message": "success"}
+
 
 @router.get('/health')
 async def health(scheduler = Depends(get_scheduler)):

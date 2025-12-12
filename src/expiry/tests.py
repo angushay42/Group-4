@@ -4,11 +4,12 @@ import requests
 import time
 import os
 import dotenv
+import datetime
 
-from expiry.routers import PostFunction
 from group4.settings import (
     SCHED_SERVER_PORT, SCHED_SERVER_URL, ENV_PATH
 )
+from expiry.models import NotifJob
 
 from django.test import TestCase
 from django.core import management
@@ -106,20 +107,9 @@ class LoginTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
 
 
-"""
-I want to test:
-- jobs are created
-- job server works
-    - receives requests
-    - handles errors okay
-    - has a log file that outputs as expected
-- scheduler runs a simple function
-- scheduler runs a function with 1 argument
-- scheduler runs a function with complex argument (DateTime)
-"""
-
 class SchedulerTestCase(TestCase):
     pass
+
 
 class JobServerTestCase(TestCase):
     BASE_URL = f"http://{SCHED_SERVER_URL}:{SCHED_SERVER_PORT}" # is http needed?
@@ -130,6 +120,7 @@ class JobServerTestCase(TestCase):
             f"Setting up {cls.__name__}"
         )
 
+        # server and scheduler init
         logger.debug(
             f"Starting apscheduler subprocess..."
         )
@@ -139,6 +130,7 @@ class JobServerTestCase(TestCase):
             stdout=subprocess.PIPE,
         )
 
+        # get api key from environment
         logger.debug(
             f"Getting API key..."
         )
@@ -152,12 +144,26 @@ class JobServerTestCase(TestCase):
                 "Api key not found"
             )
 
+        # headers used throughout requests
         cls.headers = {
             "Content-type":     "Application/json",
             "Authorization":    f"Bearer {api_key}"
         }
+
+        # User init
+        logger.debug(
+            f"Creating test user..."
+        )
         
-        # wait for init
+        cls.test_email ="working@email.com"
+        cls.test_pass = os.environ['TEST_PASS']
+
+        cls.user = User.objects.create_user(
+            username=cls.test_email,    # feels hacky
+            password=cls.test_pass
+        )
+        
+        # wait for subprocess init
         time.sleep(1)
 
     @classmethod
@@ -166,6 +172,7 @@ class JobServerTestCase(TestCase):
             f"Tearing down {cls.__name__}"
         )
         cls.serv_proc.terminate()
+        time.sleep(1)
     
     def test_health_check(self):
         logger.debug(
@@ -176,25 +183,136 @@ class JobServerTestCase(TestCase):
             headers=self.headers
         )
         self.assertEqual(response.status_code, 200)
-
-    def test_add_job(self):
-        logger.debug(
-            f"add_job test called"
+        self.assertEqual(
+            response.json()['status'], "active"
         )
-        
-        test_data = {
-            "name": "my_func",
-            "args": []
-        }
 
-        url = self.BASE_URL + '/add_job'
+    def test_handling(self):
+        """Test the server's error handling
+
+        unauthorised access
+        """
+        logger.debug(
+            f"{__class__.__name__} handling test called"
+        )
+
+        response = requests.get(
+            f"{self.BASE_URL}/health",
+            headers={'Authorization': 'Bearer madeuptoken'}
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_add_notification_good(self):
+        logger.debug(
+            "{} testing: {}".format(
+                self.__class__.__name__,
+                "add notification"
+            )
+        )
+        url = self.BASE_URL + '/add_notification'
+        
+        # good data
+        days = [0, 1]   # Mon, Tue
+        notif_time = datetime.time(13, 49)
+
+        test_data = {
+            "user_id": self.user.pk,
+            "days": days,
+            "time": {
+                "hour": notif_time.hour,
+                "minute": notif_time.minute
+            }
+        }
+    
+        response = requests.post(
+            url=url,
+            headers=self.headers,
+            json=test_data
+        )
+
+        self.assertEqual(response.status_code, 201) # Created
+
+        # check changes have persisted
+        notifs = NotifJob.objects.filter(
+            user__id=self.user.pk,
+        )
+
+        self.assertIsNotNone(notifs)
+
+    def test_add_notification_bad(self):
+        logger.debug(
+            "{} testing: {}".format(
+                self.__class__.__name__,
+                "add notification"
+            )
+        )
+        url = self.BASE_URL + '/add_notification'
+        
+        days = [0]  # Mon
+        notif_time = datetime.time(13, 49)
+
+        test_data = {
+            "user_id": 43,  # invalid user, not created in test DB
+            "days": days,
+            "time": {
+                "hour": notif_time.hour,
+                "minute": notif_time.minute
+            }
+        }
+    
+        response = requests.post(
+            url=url,
+            headers=self.headers,
+            json=test_data
+        )
+
+        self.assertEqual(response.json(), {"error": "invalid user"})
+
+        self.assertEqual(response.status_code, 400)     # Bad request 
+
+        # bad data
+        days = [40]     # invalid day 
+        notif_time = datetime.time(13, 49)
+
+        test_data = {
+            "user_id": self.user.pk,
+            "days": days,
+            "time": {
+                "hour": notif_time.hour,
+                "minute": notif_time.minute
+            }
+        }
+    
+        response = requests.post(
+            url=url,
+            headers=self.headers,
+            json=test_data
+        )
+
+        self.assertEqual(response.json(), {"error": "invalid day"})
+
+        self.assertEqual(response.status_code, 400)     # Bad request 
+
+
+    def test_delete_notification(self):
+        logger.debug("{} testing: {}".format(
+            self.__class__.__name__,
+            "add notification")
+        )
+
+        # todo remove this
+        self.skipTest("not implemented yet")
+        
+        test_data = {}
+    
+        url = self.BASE_URL + '/delete_notification'
 
         response = requests.post(
             url=url,
             headers=self.headers,
             json=test_data
         )
+
         self.assertEqual(response.status_code, 200)
-        logger.debug(
-            f"add_job response: {response.text}"
-        )
+        

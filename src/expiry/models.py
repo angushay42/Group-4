@@ -60,3 +60,9 @@ class UserSettings(models.Model):
     notification_day = models.IntegerField()
     
     #TODO account settings
+
+class NotifJob(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    job_id = models.CharField(max_length=255)   # unsure how long  
+    # auto_now can't be overriden
+    created_at = models.DateTimeField(auto_now_add=True)

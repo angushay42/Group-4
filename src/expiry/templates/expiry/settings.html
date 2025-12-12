@@ -16,10 +16,12 @@
             Account Settings
         </a>
     </li>
+
+    <!-- this whole section needs to be a form (to line 103 )-->
     <li>
         <div class="glass rounded-xl px-6 py-4 shadow-xl">
             <label class="block mb-3 text-sm text-heading">Notification Days</label>
-            <form method="post" action="">
+            <form method="post" action="{% url 'settings' %}">
                 {% csrf_token %}
                 <div class="flex flex-wrap gap-2">
                     <label class="inline-flex items-center">
@@ -97,6 +99,9 @@
             </div>
         </a>
     </li>
+
+    <!-- placeholder comment (ignore) -->
+
     <li>
         <a class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-xl transition-all duration-300 ease-out
             hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"

@@ -14,7 +14,7 @@
             <h1 class="text-2xl md:text-xl font-semibold text-white block p-3">Sign Up</h1>
         </div>
         <div class="w-full flex-1 px-6 pt-12 pb-8 md:p-6 shadow-lg bg-white rounded-t-3xl md:rounded-3xl">
-            <form action="/signup" class="space-y-6 md:space-y-4 max-w-md mx-auto md:max-w-none" method="post">
+            <form action="{% url 'signup' %}" class="space-y-6 md:space-y-4 max-w-md mx-auto md:max-w-none" method="post">
                 {% csrf_token %}
                 <div class="flex flex-col gap-6 md:gap-4">
                     {{ form }}
