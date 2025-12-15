@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from datetime import date
+from datetime import date , time
 
 import logging
 
@@ -160,26 +160,38 @@ class AddItem(forms.Form):
         return cleaned_data
 
 class SettingsForm(forms.Form):
-    notifcation_preference = forms.BooleanField(
 
-        widget=forms.CheckboxInput(
-            # TODO @charlie styling here?
-        )
+    Days = [
+        (0, 'Mon'),
+        (1, 'Tue'),
+        (2, 'Wed'),
+        (3, 'Thu'),
+        (4, 'Fri'),
+        (5, 'Sat'),
+        (6, 'Sun'),
+    ]
+
+    notification_days = forms.MultipleChoiceField(
+        choices=Days,
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'w-4 h-4 text-green-600 bg-neutral-secondary-medium border-default-medium rounded focus:ring-green-500 focus:ring-2'
+        }),
+        required=False,
     )
-    # todo @charlie I have chosen an integer 0-6, but
-    # users would prefer something more readable (mon, tues, etc)
-    notifcation_day = forms.ChoiceField(
-        # TODO @charlie day of week
-        
-    )
+
     notification_time = forms.TimeField(
-        widget=forms.TimeInput(
-            # TODO @charlie styling, appropriate input type?
-        )
+        required=False  ,
+        widget=forms.TimeInput(attrs={}),
+        initial = time(9,30)
     )
 
+    notifications = forms.BooleanField(
+        required=False,
+        initial=True,
+        label='Notifications'
+    )
     dark_mode = forms.BooleanField(
-        widget=forms.CheckboxInput(
-            #TODO @charlie styling
-        )
+        required=False,
+        initial=False,
+        label='Dark Mode'
     )

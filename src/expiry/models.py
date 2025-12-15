@@ -54,10 +54,10 @@ class UserSettings(models.Model):
         User,
         on_delete=models.CASCADE,
     )
-    notification_enabled = models.BooleanField()
+    notifications = models.BooleanField()
     dark_mode = models.BooleanField()
     notification_time = models.TimeField() 
-    notification_day = models.IntegerField()
+    notification_days = models.IntegerField()
     
     #TODO account settings
 

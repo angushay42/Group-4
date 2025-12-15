@@ -179,18 +179,18 @@ def settings(request: HttpRequest):
         form = forms.SettingsForm(request.POST)
 
         if form.is_valid():
-            if form.cleaned_data['notification_preference'] == False:
+            if form.cleaned_data['notifications'] == False:
                 # todo delete jobs
                 pass
             else:
                 notif_time: datetime.time =\
                     form.cleaned_data['notification_time']
                 
-                notif_day: int = form.cleaned_data['notification_day']
+                notif_day: int = form.cleaned_data['notification_days']
 
                 if not (
-                    notif_time == _settings.notification_time
-                    and notif_day == _settings.notification_day
+                    notif_time == _settings.notification_time       #todo 'QuerySet' object has no attribute 'notification_time'
+                    and notif_day == _settings.notification_days
                 ):
                     # idea if we add functionality for customising data view,\
                     # we may need to delete old jobs
@@ -215,9 +215,9 @@ def settings(request: HttpRequest):
                     pass
                 
             # save settings
-            notif_enabled = form.cleaned_data['notification_preference']
+            notif_enabled = form.cleaned_data['notifications']
             _settings.notification_enabled = notif_enabled
-            _settings.notification_day = notif_day if notif_enabled else None
+            _settings.notification_days = notif_day if notif_enabled else None
             _settings.notification_time = notif_time if notif_enabled else None
             _settings.dark_mode = form.cleaned_data['dark_mode']
 
