@@ -1,12 +1,12 @@
 import logging
 import uvicorn
 import os
-import time
 import dotenv
 from threading import Thread
 from fastapi import (
     FastAPI, Request, HTTPException, Depends, Response
 )
+from asgiref.sync import sync_to_async
 
 from django.conf import settings
 from django.utils import timezone
@@ -27,11 +27,16 @@ from group4.settings import (
 
 logger = logging.getLogger("jobs")
 
-logger.debug(
-    f"{__name__} setting up environment..."
-)
+# todo remove
+def debugger(message: str):
+    logger.debug(f"=" * 50)
+    logger.debug(message)
+    logger.debug(f"=" * 50)
 
+# environment init
+debugger(f"{__name__} setting up environment...")
 os.environ.update(dotenv.dotenv_values(ENV_PATH))
+
 
 logger.debug(
     f"env path: {ENV_PATH}"
@@ -53,12 +58,15 @@ async def auth_requests(request: Request, call_next):
 
     api_key = os.environ.get('API_KEY')
 
-
     if not api_key:
         logger.debug(
             f"ERROR.{__name__}: API key not found"
         )
         # raise TypeError     # todo replace with internal exception
+    else:
+        logger.debug(
+            f"API key found."
+        )
 
     authorization = request.headers.get('Authorization')
     # authenticate request
@@ -76,7 +84,8 @@ async def auth_requests(request: Request, call_next):
         )
         # can't raise exception in middleware. good to know
         return Response(status_code=403)
-        
+    logger.debug(f"Request authorised")
+
     response = await call_next(request)
     return response
 
@@ -113,6 +122,11 @@ class Command(BaseCommand):
             f"argument check: {options["test"]}"
         )
         self.test: bool = options["test"]
+
+        # todo might be needed?
+        # if self.test:
+        #     os.environ['DJANGO_TEST_DB'] = # todo
+            
 
         # init
         set_scheduler(BlockingScheduler(timezone=settings.TIME_ZONE))

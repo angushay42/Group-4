@@ -14,11 +14,12 @@ from asgiref.sync import sync_to_async
 from apscheduler.schedulers.blocking import BaseScheduler
 from apscheduler.triggers.cron import CronTrigger
 
+from group4 import settings
+from django.db import connection
 from group4.settings import ENV_PATH
 from expiry.models import NotifJob, User
 from expiry.notifications import send_notification
 from expiry.scheduler_inst import get_scheduler
-
 
 logger = logging.getLogger("jobs")
 
@@ -34,8 +35,17 @@ class NotificationPackage(BaseModel):
     days: list[int]
     time: dict[str, int]
 
+class JobPackage(BaseModel):
+    user_id: int | None = None
+    job_id: str | None = None
 
-# idea could use request body if we need something heavier
+
+def debugger(message: str):
+    logger.debug(f"=" * 50)
+    logger.debug(message)
+    logger.debug(f"=" * 50)
+
+
 @router.post('/add_notification')
 async def add_notification(
     notif: NotificationPackage,
@@ -129,7 +139,7 @@ async def add_notification(
     objs = await sync_to_async(NotifJob.objects.bulk_create)(
         [NotifJob(
             user_id=notif.user_id,
-            job_id=job
+            job_id=job.id   # string
         ) for job in jobs]
     )
 
@@ -148,15 +158,115 @@ async def add_notification(
     return {"message": "success"}
 
 
+# todo also needs to delete from scheduler no? 
+@router.post('/delete_notification')
+async def delete_notification(
+    body: JobPackage,
+    response: Response,
+):
+    logger.debug(
+        f"delete_notification called"
+    )
+
+
+    if (body.job_id is None) == (body.user_id is None):
+        logger.debug(
+            f"no arguments given. body:{body.job_id}, user:{body.user_id}"
+        )
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return {"error": "no arguments"}
+    
+    if body.job_id:
+        try: 
+            logger.debug(
+                f"trying job_id {body.job_id}..."
+            )
+
+            all_ = await sync_to_async(NotifJob.objects.all)()
+            all_ = await sync_to_async(list)(all_)
+            logger.debug(
+                f"all job objects{all_}"
+            )
+            # should be unique
+            job = await sync_to_async(NotifJob.objects.get)(
+                job_id=body.job_id
+            )
+            logger.debug(
+                f"job_id returned job {job}"
+            )
+            # delete job
+            await sync_to_async(job.delete)()
+            logger.debug(
+                f"job deleted"
+            )
+            
+        except NotifJob.DoesNotExist:
+            logger.debug(
+                f"invalid job id: {body.job_id}"
+            )
+            response.status_code = status.HTTP_400_BAD_REQUEST
+            return {"error": "invalid job"}
+        
+    else:   # user_id
+        try: 
+            logger.debug(
+                f"trying user_id..."
+            )
+            jobs = await sync_to_async(NotifJob.objects.filter)(
+                user__id=body.user_id   # FK lookup
+            )
+            jobs = await sync_to_async(list)(jobs)
+            logger.debug(
+                f"user_id returned jobs: {jobs}"
+            )
+            if not jobs:
+                response.status_code = status.HTTP_400_BAD_REQUEST
+                return {"error": "invalid user_id"}
+
+            # go through jobs and delete
+            for job in jobs:
+                await sync_to_async(job.delete)()
+            logger.debug(
+                f"user jobs deleted"
+            )
+            
+        except NotifJob.DoesNotExist:
+            logger.debug(
+                f"invalid user id: {body.user_id}"
+            )
+            response.status_code = status.HTTP_400_BAD_REQUEST
+            return {"error": "invalid user"}
+
+    return {"message": "deletion succcessful"}
+
+@router.post('/test_db')
+async def test_db(body: JobPackage):
+
+    from django.db import connection
+    debugger(connection.settings_dict["NAME"])
+    
+    # test that job id exists
+    debugger("tests_db requested")
+    try:
+        job = await sync_to_async(NotifJob.objects.get)(job_id=body.job_id)
+        debugger("job exists")
+
+    except NotifJob.DoesNotExist:
+        debugger("job doesnt exist")
+
+    return {'message': "test"}
+        
+
 @router.get('/health')
 async def health(scheduler = Depends(get_scheduler)):
     logger.debug(
         f"/health requested"
     )
     # todo more info if needed
-    return {
-        "status": "active"
-    }
+    logger.debug(
+        ""
+    )
+    return {"status": "active"}
 
 
 # query database for notification preferences

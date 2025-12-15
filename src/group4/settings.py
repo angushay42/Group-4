@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+import logging
+
+logger = logging.getLogger('tests')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -88,10 +92,19 @@ WSGI_APPLICATION = 'group4.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
+TEST_RUNNER = 'expiry.integration_test_runner.IntegrationRunner'
+
+with open('tests.txt', "a") as f:
+    # todo
+    print("="*50, file=f)
+    print(f"settings accessed", file=f)
+    print(f"{os.environ.get('DJANGO_TEST_DB')}", file=f)
+    print("="*50, file=f)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.environ.get('DJANGO_TEST_DB', BASE_DIR / 'db.sqlite3')   # clever 
     }
 }
 

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http.request import HttpRequest
@@ -34,11 +34,22 @@ def login_view(request: HttpRequest):
     code = 200
     if request.user.is_authenticated:
         return redirect("dashboard")
+    
 
     if request.method == "POST":
+        # todo ugly
+        if request.POST.get('test_name'):
+            logger.debug(f"testname: {request.POST.get('test_name')}")
+
         form = forms.LogininForm(request.POST)
         if form.is_valid():
             user = form.cleaned_data['user']
+            check = authenticate(
+                request,
+                username= user.username,
+                password=user.password
+            )
+
             login(request, user)
             messages.success(request, "Logged in successfully!")
             return redirect("dashboard")
@@ -58,10 +69,6 @@ def login_view(request: HttpRequest):
                 ValueError("fatal")
 
             errors = errors.get('__all__')
-
-            logger.debug(
-                f"logic test: {any("Invalid" in message['message'] for message in errors)}"
-            )
 
             if any("Invalid" in message['message'] for message in errors):
                 code = 401
