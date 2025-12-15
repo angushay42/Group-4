@@ -6,11 +6,11 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http.request import HttpRequest
 from django.utils import timezone
 from django.db.models import Case, When, IntegerField
+from django.conf import settings as django_settings
 
 from . import forms
 from .forms import AddItem
 from .models import Item, UserSettings
-from group4.settings import SCHED_SERVER_PORT, SCHED_SERVER_URL
 
 import logging
 import datetime
@@ -173,7 +173,15 @@ def settings(request: HttpRequest):
     user = User.objects.get(username=request.user.username)
 
     # private to avoid overriding 
-    _settings: UserSettings = UserSettings.objects.filter(user=user)
+    _settings, created = UserSettings.objects.get_or_create(
+        user=request.user,
+        defaults={
+            'notifications' : False,
+            'dark_mode' : False,
+            'notification_time' : datetime.time(9, 30),
+            'notification_days' : 0,
+        }
+    )
 
     if request.method == 'POST':
         form = forms.SettingsForm(request.POST)
@@ -197,9 +205,9 @@ def settings(request: HttpRequest):
 
                     # todo wrap this as a function
                     # make a request to scheduler server
-                    url = f"http://{SCHED_SERVER_URL}:{SCHED_SERVER_PORT}"
+                    url = f"http://{django_settings.SCHED_SERVER_URL}:{django_settings.SCHED_SERVER_PORT}"
                     params = {
-                        'user': user.name,
+                        'user': user.username,
                         'time': notif_time, # bug too complex to pass?
                         'day_of_week': notif_day
                     }
