@@ -1,6 +1,6 @@
 {% load static tailwind_tags %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="{% if dark_mode %}dark{% endif %}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,12 +10,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 </head>
 
-<body class="pb-20 mb:pb-0">
+<body class="pb-20 mb:pb-0 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
 {% include 'expiry/sidebar.html'%}
 
 
 <main class="p-8 transition-all duration-300" id="mainContent">
-    <div class="bg-white rounded-2xl p-0 md:p-8 md:shadow-xl md:max-w-6xl md:mx-auto mx-0">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-0 md:p-8 md:shadow-xl dark:md:shadow-2xl dark:md:shadow-black/50 md:max-w-6xl md:mx-auto mx-0 transition-colors duration-200">
         {% block content %}{% endblock %}
     </div>
 </main>

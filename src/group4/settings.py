@@ -53,7 +53,7 @@ INSTALLED_APPS = [
 # todo check this works
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 APSCHEDULER_RUN_NOW_TIMEOUT = 35    # seconds 
-SCHED_SERVER_URL = "127.0.0.1"      # localhost
+SCHED_SERVER_URL = "127.0.0.1"        # localhost
 SCHED_SERVER_PORT = 3131            # lucky number
 
 TAILWIND_APP_NAME = 'Users'
@@ -133,7 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'GMT'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
