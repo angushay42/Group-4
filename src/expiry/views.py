@@ -267,7 +267,7 @@ def add_item_view(request: HttpRequest):
             )
 
             messages.success(request, "Item added successfully!")
-            return redirect("dashboard")
+            return redirect("items")
     else:
         form = AddItem()
 
