@@ -16,21 +16,37 @@
     <!-- todo sort by drop down @charlie -->
     {% for item in items %}
     <!-- load item contents, dunno how this should be styled -->
-<li>
-    <div class="rounded-xl px-6 py-3 flex items-center justify-between gap-3 shadow-xl
+    <li>
+        <div class="rounded-xl px-6 py-3 flex items-center justify-between gap-3 shadow-xl
                 hover:-translate-y-0.5 transition">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-green-600">
+                    {% if item.item_category == 'FRUIT' %}
+                        nutrition
+                    {% elif item.item_category == 'DAIRY' %}
+                        local_pizza
+                    {% elif item.item_category == 'BREAD' %}
+                        bakery_dining
+                    {% elif item.item_category == 'VEG' %}
+                        eco
+                    {% elif item.item_category == 'EGGS' %}
+                        egg
+                    {% elif item.item_category == 'MEAT' %}
+                        kebab_dining
+                    {% endif %}
+                </span>
 
-        <div class="flex flex-col">
-            <span>{{ item.item_name }}</span>
-            <span class="text-sm text-gray-500">{{ item.expiry_date }}</span>
-        </div>
+                <div class="flex flex-col">
+                    <span>{{ item.item_name }}</span>
+                    <span class="text-sm text-gray-500">{{ item.expiry_date }}</span>
+                </div>
 
-        <a href="{% url 'edit_item' item.id %}"
-           class="text-green-600 hover:text-green-800">
-            <span class="material-symbols-outlined">edit</span>
-        </a>
-    </div>
-</li>
+                <a href="{% url 'edit_item' item.id %}"
+                   class="text-green-600 hover:text-green-800">
+                    <span class="material-symbols-outlined">edit</span>
+                </a>
+            </div>
+    </li>
     {% endfor %}
 </ul>
 
