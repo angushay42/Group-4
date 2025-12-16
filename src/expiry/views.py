@@ -10,7 +10,7 @@ from django.db.models import Case, When, IntegerField
 from . import forms
 from .forms import AddItem
 from .models import Item, UserSettings
-from group4.settings import SCHED_SERVER_PORT, SCHED_SERVER_URL
+from group4 import settings as django_settings
 
 import logging
 import datetime
@@ -173,51 +173,61 @@ def settings(request: HttpRequest):
     user = User.objects.get(username=request.user.username)
 
     # private to avoid overriding 
-    _settings: UserSettings = UserSettings.objects.filter(user=user)
+    _settings, created = UserSettings.objects.get_or_create(
+        user=request.user,
+        defaults={
+            'notifications' : False,
+            'dark_mode' : False,
+            'notification_time' : datetime.time(9, 30),
+            'notification_days' : 0,
+        }
+    )
 
     if request.method == 'POST':
         form = forms.SettingsForm(request.POST)
 
         if form.is_valid():
-            if form.cleaned_data['notification_preference'] == False:
+            if form.cleaned_data['notifications'] == False:
                 # todo delete jobs
                 pass
             else:
                 notif_time: datetime.time =\
                     form.cleaned_data['notification_time']
                 
-                notif_day: int = form.cleaned_data['notification_day']
+                notif_days = [int(x) for x in form.cleaned_data['notification_days']]
+                logger.debug(f"{notif_days}")
 
                 if not (
-                    notif_time == _settings.notification_time
-                    and notif_day == _settings.notification_day
+                    notif_time == _settings.notification_time       #todo 'QuerySet' object has no attribute 'notification_time'
+                    and notif_days == _settings.notification_days
                 ):
                     # idea if we add functionality for customising data view,\
                     # we may need to delete old jobs
 
                     # todo wrap this as a function
                     # make a request to scheduler server
-                    url = f"http://{SCHED_SERVER_URL}:{SCHED_SERVER_PORT}"
+                    url = f"http://{django_settings.SCHED_SERVER_URL}:{django_settings.SCHED_SERVER_PORT}"
                     params = {
-                        'user': user.name,
-                        'time': notif_time, # bug too complex to pass?
-                        'day_of_week': notif_day
+                        'user': user.username,
+                        'time': notif_time,
+                        'day_of_week': notif_days
                     }
 
-                    response = requests.get(
-                        url=url,
-                        params=params,
-                    )
-                    # check that response is OK
-                    if not response.status_code == 200:
-                        # todo create custom exception for this app
-                        raise TypeError
-                    pass
-                
+                    try:
+                        response = requests.get(
+                            url=url,
+                            params=params,
+                        )
+                        # check that response is OK
+                        if not response.status_code == 200:
+                            # todo create custom exception for this app
+                            raise TypeError
+                    except:     # something?
+                        logger.debug(f"CRITICAL ERROR: Could not connect to Scheduler server")
             # save settings
-            notif_enabled = form.cleaned_data['notification_preference']
-            _settings.notification_enabled = notif_enabled
-            _settings.notification_day = notif_day if notif_enabled else None
+            notif_enabled = form.cleaned_data['notifications']
+            _settings.notifications = notif_enabled
+            _settings.notification_days = notif_days if notif_enabled else None
             _settings.notification_time = notif_time if notif_enabled else None
             _settings.dark_mode = form.cleaned_data['dark_mode']
 
