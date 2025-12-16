@@ -2,6 +2,7 @@ import json
 import os
 import logging
 import subprocess
+import threading
 import requests
 import time
 import os
@@ -9,11 +10,16 @@ import dotenv
 import datetime
 
 from group4.settings import (
-    SCHED_SERVER_PORT, SCHED_SERVER_URL, ENV_PATH
+    SCHED_SERVER_PORT, SCHED_SERVER_URL, ENV_PATH, TIME_ZONE
 )
+from expiry.scheduler_inst import get_scheduler, set_scheduler
 from expiry.models import NotifJob
 
-from django.core.management import call_command
+from apscheduler.events import (
+    EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MISSED
+)
+from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.triggers.cron import CronTrigger
 from django.test import TestCase, TransactionTestCase, Client
 from django.contrib.auth.models import User
 
@@ -22,6 +28,9 @@ from django.contrib.auth.models import User
 # https://docs.djangoproject.com/en/5.2/topics/testing/tools/  <-- Client
 
 logger = logging.getLogger("tests")
+
+
+test_executed = False
 
 # todo remove
 def debugger(message: str):
@@ -163,10 +172,115 @@ class LoginTestCase(TransactionTestCase):
         self.assertEqual(response.status_code, 302)
 
 
-class SchedulerTestCase(TestCase):
-    pass
+def dummy_test_public():
+    global test_executed
+    test_executed = True
+
+class SchedulerTestCase(TransactionTestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        debugger(f"setting up {cls.__name__}")
+
+        cls.timeout = 5     # seconds
+        cls.executed = False
+        cls.job_events = []
+
+        cls.scheduler = set_scheduler(debug=True)
+        cls.scheduler = get_scheduler()
+
+        # Add event listeners to track what's happening
+        cls.scheduler.add_listener(cls.job_executed_listener, EVENT_JOB_EXECUTED)
+        cls.scheduler.add_listener(cls.job_error_listener, EVENT_JOB_ERROR)
+        cls.scheduler.add_listener(cls.job_missed_listener, EVENT_JOB_MISSED)
+        
+        print(f"Executors: {cls.scheduler._executors}")
+        print(f"Jobstores: {cls.scheduler._jobstores}")
+        
+        cls.scheduler.start()
+        
+        print(f"Scheduler running: {cls.scheduler.running}")
+        print(f"Scheduler state: {cls.scheduler.state}")
+        
+    @classmethod
+    def job_executed_listener(cls, event):
+        print(f"!!! JOB EXECUTED EVENT: {event}")
+        cls.job_events.append(('executed', event))
+        
+    @classmethod
+    def job_error_listener(cls, event):
+        print(f"!!! JOB ERROR EVENT: {event}")
+        print(f"!!! Exception: {event.exception}")
+        print(f"!!! Traceback: {event.traceback}")
+        cls.job_events.append(('error', event))
+        
+    @classmethod
+    def job_missed_listener(cls, event):
+        print(f"!!! JOB MISSED EVENT: {event}")
+        cls.job_events.append(('missed', event))
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+
+        bef = time.time()
+        cls.scheduler.shutdown()
+        debugger(f"scheduler took {time.time() - bef:3f} seconds to shutdown.")
+
+        # should be fine
+   
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+        self.executed = False
+        
+    @staticmethod
+    def dummy_job():
+        global test_executed
+        test_executed = True
+        with open('test.txt', 'a') as f:    
+            print(f"dummy job executing at {time.time()}", file=f)
 
 
+    def _add_job(self):
+        delta = (
+            datetime.datetime.now() 
+            + datetime.timedelta(seconds=self.timeout)
+        )
+
+        trig = CronTrigger(
+            hour=delta.hour,
+            minute=delta.minute,
+            second=delta.second,
+            timezone=TIME_ZONE
+        )
+        job = self.scheduler.add_job(
+            dummy_test_public,
+            trigger=trig,
+        )
+        return job
+
+    def test_add_job(self):
+        job = self._add_job()
+
+        self.assertIsNotNone(job)
+        self.assertIsNotNone(self.scheduler.get_jobs())
+
+    def test_job_exec(self):
+        # make a trigger that is soon
+        # add a job 
+        
+        job = self._add_job()
+        time.sleep(self.timeout + 1)
+
+        debugger(f"{job.executor}")
+
+        global test_executed
+        self.assertTrue(test_executed)
+
+    
 class JobServerTestCase(TransactionTestCase):
     BASE_URL = f"http://{SCHED_SERVER_URL}:{SCHED_SERVER_PORT}" # is http needed?
 
@@ -227,6 +341,8 @@ class JobServerTestCase(TransactionTestCase):
             f"Tearing down {cls.__name__}"
         )
 
+        # todo send a signal to tell the process to stop 
+        # so that the scheduler doesn't f up
         cls.serv_proc.terminate()
         time.sleep(0.2)
 

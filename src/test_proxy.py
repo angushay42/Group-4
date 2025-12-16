@@ -7,6 +7,8 @@ from django.core.management import call_command
 # small test script that sets a variable and calls tests
 # this is annoying but might work
 
+# todo make this a command
+
 def main(args: list[str]):
 
     # todo hardcoded

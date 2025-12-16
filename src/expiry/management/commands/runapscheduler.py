@@ -127,11 +127,7 @@ class Command(BaseCommand):
         # if self.test:
         #     os.environ['DJANGO_TEST_DB'] = # todo
             
-
-        # init
-        set_scheduler(BlockingScheduler(timezone=settings.TIME_ZONE))
         sched = get_scheduler()
-        sched.add_jobstore(DjangoJobStore(), "default")
 
         # todo from docs, may want to remove? 
         sched.add_job(
@@ -156,6 +152,7 @@ class Command(BaseCommand):
                 daemon=True,
             )
 
+            # todo this needs to be graceful
             # spin up scheduler
             sched_thread.start()
 
@@ -167,6 +164,11 @@ class Command(BaseCommand):
                 port=SCHED_SERVER_PORT,
                 log_level="debug"
             )
+
+            debugger(f"attempting scheduler shutdown")
+            sched = get_scheduler()
+            sched.shutdown()
+
             
         except KeyboardInterrupt:
             logger.debug("Stopping scheduler...")

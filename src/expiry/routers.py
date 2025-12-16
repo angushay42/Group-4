@@ -49,9 +49,7 @@ def debugger(message: str):
 @router.post('/add_notification')
 async def add_notification(
     notif: NotificationPackage,
-    scheduler: Annotated[
-        BaseScheduler, Depends(get_scheduler)
-    ],
+    scheduler: Annotated[BaseScheduler, Depends(get_scheduler)],
     response: Response    
 ):
     logger.debug(
@@ -163,11 +161,11 @@ async def add_notification(
 async def delete_notification(
     body: JobPackage,
     response: Response,
+    scheduler: Annotated[BaseScheduler, Depends(get_scheduler)],
 ):
     logger.debug(
         f"delete_notification called"
     )
-
 
     if (body.job_id is None) == (body.user_id is None):
         logger.debug(
@@ -236,26 +234,10 @@ async def delete_notification(
             )
             response.status_code = status.HTTP_400_BAD_REQUEST
             return {"error": "invalid user"}
+        
+    # todo scheduler needs to delete job entry also
 
     return {"message": "deletion succcessful"}
-
-@router.post('/test_db')
-async def test_db(body: JobPackage):
-
-    from django.db import connection
-    debugger(connection.settings_dict["NAME"])
-    
-    # test that job id exists
-    debugger("tests_db requested")
-    try:
-        job = await sync_to_async(NotifJob.objects.get)(job_id=body.job_id)
-        debugger("job exists")
-
-    except NotifJob.DoesNotExist:
-        debugger("job doesnt exist")
-
-    return {'message': "test"}
-        
 
 @router.get('/health')
 async def health(scheduler = Depends(get_scheduler)):

@@ -8,3 +8,4 @@ notes.md
 __pycache__/
 /venv-12
 Procfile*
+_sched_test.py
