@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
@@ -19,22 +19,23 @@ import json
 
 logger = logging.getLogger('views')
 
-SOON_THRESH = 10 # todo
+SOON_THRESH = 10  # todo
+
 
 def startup(request: HttpRequest):
     logger.debug("startup page viewed")
     return render(request, 'expiry/startup.html')
 
+
 def logout_view(request: HttpRequest):
     logout(request)
     return redirect("login")
 
-def login_view(request: HttpRequest):
 
+def login_view(request: HttpRequest):
     code = 200
     if request.user.is_authenticated:
         return redirect("dashboard")
-    
 
     if request.method == "POST":
         # todo ugly
@@ -46,7 +47,7 @@ def login_view(request: HttpRequest):
             user = form.cleaned_data['user']
             check = authenticate(
                 request,
-                username= user.username,
+                username=user.username,
                 password=user.password
             )
 
@@ -77,11 +78,12 @@ def login_view(request: HttpRequest):
     else:
         form = forms.LogininForm()
     return render(
-        request, 
-        "expiry/login.html", 
-        {"login_form" : form}, 
+        request,
+        "expiry/login.html",
+        {"login_form": form},
         status=code
     )
+
 
 def signup_view(request: HttpRequest):
     if request.method == "POST":
@@ -91,7 +93,8 @@ def signup_view(request: HttpRequest):
             return redirect("dashboard")
     else:
         form = forms.RegisterUserForm()
-    return render(request, 'expiry/signup.html', {"form" : form})
+    return render(request, 'expiry/signup.html', {"form": form})
+
 
 def dashboard(request: HttpRequest):
     """
@@ -104,29 +107,29 @@ def dashboard(request: HttpRequest):
     - 
     """
 
-    if not request.user.is_authenticated:   # limits access when not logged in
-        return render(request, "login")     # redirect?
+    if not request.user.is_authenticated:  # limits access when not logged in
+        return render(request, "login")  # redirect?
 
-
-    user = User.objects.get(username=request.user.username)  
+    user = User.objects.get(username=request.user.username)
     items = Item.objects.filter(user=user)
-    
+
     # get total, expires soon, frozen
     expiry_threshold = (
-        timezone.now() +
-        datetime.timedelta(days=SOON_THRESH)
+            timezone.now() +
+            datetime.timedelta(days=SOON_THRESH)
     )
 
     context = {
-        'items': items, 
+        'items': items,
         "totals": {
-            'frozen': len(items.filter(storage_type=Item.FREEZER)), 
-            'total': len(items), 
+            'frozen': len(items.filter(storage_type=Item.FREEZER)),
+            'total': len(items),
             'soon': len(items.filter(expiry_date__lte=expiry_threshold)),
         }
     }
 
     return render(request, 'expiry/dashboard.html', context=context)
+
 
 def items_list(request: HttpRequest):
     """
@@ -135,14 +138,14 @@ def items_list(request: HttpRequest):
     error check for query parameters, if a false one given, just ignore it?
     """
 
-    #todo clean input, or make sure dashboard.html sends same string
+    # todo clean input, or make sure dashboard.html sends same string
     filter = request.GET.get('filter')
-    
+
     if not request.user.is_authenticated:
         return render(request, "login")
 
     logger.debug(f"items_list getting user and items")
-    user = User.objects.get(username=request.user.username)  
+    user = User.objects.get(username=request.user.username)
     items = Item.objects.filter(user=user)
 
     logger.debug(f"items: {items}")
@@ -156,22 +159,22 @@ def items_list(request: HttpRequest):
         # https://docs.djangoproject.com/en/5.2/ref/models/conditional-expressions/
         filtered = items.annotate(
             is_frozen=Case(
-                When(storage_type="frozen", then=0),    # 0 is first
+                When(storage_type="frozen", then=0),  # 0 is first
                 default=1,
-                output_field=IntegerField(),            # necessary?
+                output_field=IntegerField(),  # necessary?
             )
         ).order_by("is_frozen", "expiry_date")
 
-        context['items'] = filtered # todo safe?
+        context['items'] = filtered  # todo safe?
     logger.debug(f"context: {context}")
 
     return render(request, 'expiry/items.html', context=context)
- 
-def settings(request: HttpRequest):
 
-    if not request.user.is_authenticated:  
+
+def settings(request: HttpRequest):
+    if not request.user.is_authenticated:
         return render(request, "login")
-    
+
     # load user settings
     user = User.objects.get(username=request.user.username)
 
@@ -179,10 +182,10 @@ def settings(request: HttpRequest):
     _settings, created = UserSettings.objects.get_or_create(
         user=request.user,
         defaults={
-            'notifications' : False,
-            'dark_mode' : False,
-            'notification_time' : datetime.time(9, 30),
-            'notification_days' : 0,
+            'notifications': False,
+            'dark_mode': False,
+            'notification_time': datetime.time(9, 30),
+            'notification_days': 0,
         }
     )
 
@@ -194,15 +197,15 @@ def settings(request: HttpRequest):
                 # todo delete jobs
                 pass
             else:
-                notif_time: datetime.time =\
+                notif_time: datetime.time = \
                     form.cleaned_data['notification_time']
-                
+
                 notif_days = [int(x) for x in form.cleaned_data['notification_days']]
                 logger.debug(f"{notif_days}")
 
                 if not (
-                    notif_time == _settings.notification_time       #todo 'QuerySet' object has no attribute 'notification_time'
-                    and notif_days == _settings.notification_days
+                        notif_time == _settings.notification_time  # todo 'QuerySet' object has no attribute 'notification_time'
+                        and notif_days == _settings.notification_days
                 ):
                     # idea if we add functionality for customising data view,\
                     # we may need to delete old jobs
@@ -225,7 +228,7 @@ def settings(request: HttpRequest):
                         if not response.status_code == 200:
                             # todo create custom exception for this app
                             raise TypeError
-                    except:     # something?
+                    except:  # something?
                         logger.debug(f"CRITICAL ERROR: Could not connect to Scheduler server")
             # save settings
             notif_enabled = form.cleaned_data['notifications']
@@ -244,7 +247,8 @@ def settings(request: HttpRequest):
         'form': form
     }
 
-    return render(request,'expiry/settings.html', context=context)
+    return render(request, 'expiry/settings.html', context=context)
+
 
 def add_item_view(request: HttpRequest):
     if not request.user.is_authenticated:  # limits access when not logged in
@@ -262,8 +266,8 @@ def add_item_view(request: HttpRequest):
             # TODO: Add database saving here
             Item.objects.create(
                 user=request.user,
-                item_name=item_name, 
-                expiry_date=expiry_date, 
+                item_name=item_name,
+                expiry_date=expiry_date,
                 item_category=item_category,
                 quantity=quantity
             )
@@ -274,3 +278,34 @@ def add_item_view(request: HttpRequest):
         form = AddItem()
 
     return render(request, "expiry/add_item.html", {"form": form})
+
+
+def edit_item_view(request: HttpRequest, item_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    item = get_object_or_404(Item, id=item_id, user=request.user)
+
+    if request.method == "POST":
+        form = AddItem(request.POST)
+        if form.is_valid():
+            item.item_name = form.cleaned_data["item_name"]
+            item.item_category = form.cleaned_data["item_category"]
+            item.quantity = form.cleaned_data["quantity"]
+            item.expiry_date = form.cleaned_data["expiry_date"]
+            item.save()
+
+            return redirect("items")
+
+    else:
+        form = AddItem(initial={
+            "item_name": item.item_name,
+            "item_category": item.item_category,
+            "quantity": item.quantity,
+            "expiry_date": item.expiry_date,
+        })
+
+    return render(request, "expiry/edit_item.html", {
+        "form": form,
+        "item": item,
+    })

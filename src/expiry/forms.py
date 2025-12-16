@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from datetime import date , time
-
+from .models import Item
 import logging
 
 logger = logging.Logger('forms')
@@ -113,17 +113,17 @@ class AddItem(forms.Form):
         required=True,
         max_length=50,
         widget=forms.TextInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
+            'class':    'border w-full text-base px-2 py-1 focus:outline-none '
                         'focus:ring-0 focus:border-green-600 rounded-xl',
             'placeholder': 'Enter item name'
         })
     )
 
-    item_category = forms.CharField(
+    item_category = forms.ChoiceField(
         required=True,
-        max_length=50,
-        widget=forms.TextInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
+        choices= Item.ITEM_CHOICES,
+        widget=forms.Select(attrs={
+            'class':    'border w-full text-base px-2 py-1 focus:outline-none '
                         'focus:ring-0 focus:border-green-600 rounded-xl',
             'placeholder': 'e.g., Fruit, Dairy, Vegetables'
         })
@@ -133,7 +133,7 @@ class AddItem(forms.Form):
         min_value=1,
         required=True,
         widget=forms.NumberInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
+            'class':    'border w-full text-base px-2 py-1 focus:outline-none '
                         'focus:ring-0 focus:border-green-600 rounded-xl',
             'placeholder': 'Quantity'
         })
@@ -142,7 +142,7 @@ class AddItem(forms.Form):
     expiry_date = forms.DateField(
         required=True,
         widget=forms.DateInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
+            'class':    'border w-full text-base px-2 py-1 focus:outline-none '
                         'focus:ring-0 focus:border-green-600 rounded-xl',
             'placeholder': 'YYYY-MM-DD',
             'type': 'date',
