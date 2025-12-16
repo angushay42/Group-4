@@ -123,6 +123,7 @@ class Command(BaseCommand):
         )
         self.test: bool = options["test"]
             
+        sched = set_scheduler(debug=self.test)
         sched = get_scheduler()
 
         # todo from docs, may want to remove? 

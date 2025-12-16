@@ -307,12 +307,6 @@ class JobServerTestCase(TransactionTestCase):
         # call_command('makemigrations')
         # call_command('migrate', verbosity=1, interactive=False)
 
-        # with open('tests.txt', "a") as f:
-        #     # todo
-        #     print("="*50, file=f)
-        #     print(f"environment created", file=f)
-        #     print("="*50, file=f)
-
         cls.serv_proc = subprocess.Popen(
             ["python3", "manage.py", "runapscheduler", "-t"],
             stdin=subprocess.PIPE,
