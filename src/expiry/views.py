@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http.request import HttpRequest
 from django.utils import timezone
 from django.db.models import Case, When, IntegerField
+from django.forms.models import model_to_dict
 
 from . import forms
 from .forms import AddItem
@@ -186,10 +187,19 @@ def settings(request: HttpRequest):
         }
     )
 
+    logger.debug(
+        f"{json.dumps(
+            model_to_dict(_settings),
+            indent=2, 
+            default=lambda x: str(x)
+        )}"
+    )
+
     if request.method == 'POST':
         form = forms.SettingsForm(request.POST)
 
         if form.is_valid():
+            
             if form.cleaned_data['notifications'] == False:
                 # todo delete jobs
                 pass
