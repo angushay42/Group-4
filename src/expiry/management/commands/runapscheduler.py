@@ -122,10 +122,6 @@ class Command(BaseCommand):
             f"argument check: {options["test"]}"
         )
         self.test: bool = options["test"]
-
-        # todo might be needed?
-        # if self.test:
-        #     os.environ['DJANGO_TEST_DB'] = # todo
             
         sched = get_scheduler()
 

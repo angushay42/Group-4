@@ -12,11 +12,15 @@
     </div>
 </div>
 
+<ul class="flex flex-col gap-6 mt-8 rounded-2xl">
 <!-- todo sort by drop down @charlie -->
 {% for item in items %}
     <!-- load item contents, dunno how this should be styled -->
+     <li>
+        <label>{{ item }}</label>
+     </li>
 {% endfor %}
-
+</ul>
 <!-- todo add button to add form -->
 
 {% endblock %}

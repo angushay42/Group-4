@@ -48,6 +48,7 @@ class Item(models.Model):
         max_length=4,
         choices=STORAGE_TYPE_CHOICES
     )
+    quantity = models.PositiveIntegerField()
 
 class UserSettings(models.Model):
     user = models.ForeignKey(

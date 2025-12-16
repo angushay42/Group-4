@@ -23,7 +23,10 @@
 
         <!-- Notification Days -->
         <li>
-            <div class="glass rounded-xl px-6 py-4 shadow-xl">
+            <div 
+                class="glass rounded-xl px-6 py-4 shadow-xl"
+                id="notif_days"
+            >
                 <label class="block mb-3 text-sm text-heading">Notification Days</label>
                 <div class="flex flex-wrap gap-2">
                     {% for value, label in form.notification_days.field.choices %}
@@ -31,7 +34,8 @@
                             <input type="checkbox"
                                    name="notification_days"
                                    value="{{ value }}"
-                                   class="w-4 h-4 text-green-600 bg-neutral-secondary-medium border-default-medium rounded focus:ring-green-500 focus:ring-2"
+                                   class="w-4 h-4 text-green-600 bg-neutral-secondary-medium border-default-medium rounded focus:ring-green-500 focus:ring-2
+                                        day_optional_required"
                                    {% if value|stringformat:"s" in form.notification_days.value|default_if_none:"" %}checked{% endif %}>
                             <span class="ml-2 text-sm text-heading">{{ label }}</span>
                         </label>
@@ -41,20 +45,26 @@
         </li>
 
         <!-- Notification Time-->
+        <!-- todo this could be greyed out @charlie -->
         <li>
-            <div class="glass rounded-xl px-6 py-4 shadow-xl">
+            <div 
+                class="glass rounded-xl px-6 py-4 shadow-xl optional_required"
+            >
                 <label class="block mb-3 text-sm text-heading">Notification Time</label>
                 <input type="time"
                        name="notification_time"
                        value="{{ form.notification_time.value|default:'' }}"
-                       class="w-full px-3 py-2 bg-neutral-secondary-medium border-default-medium rounded-lg focus:ring-green-500 focus:ring-2 focus:outline-none text-heading">
+                       class="w-full px-3 py-2 bg-neutral-secondary-medium border-default-medium rounded-lg focus:ring-green-500 focus:ring-2 focus:outline-none text-heading"
+                >
             </div>
         </li>
 
         <!-- Notifications Toggle -->
         <li>
-            <div class="glass rounded-xl px-6 py-3 flex items-center md:gap-3 gap-37 shadow-xl transition-all duration-300 ease-out
-                hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+            <div 
+                class="glass rounded-xl px-6 py-3 flex items-center md:gap-3 gap-37 shadow-xl transition-all duration-300 ease-out
+                hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0" 
+            >
                 Notifications
                 <div class="relative inline-block w-11 h-5">
                     <input id="switch-component-1"
@@ -63,8 +73,10 @@
                            value="true"
                            {% if form.notifications.value %}checked{% endif %}
                            class="peer appearance-none w-11 h-5 bg-slate-100 rounded-full checked:bg-slate-800 cursor-pointer transition-colors duration-300"/>
-                    <label for="switch-component-1"
-                           class="absolute top-0 left-0 w-5 h-5 bg-white rounded-full border border-slate-300 shadow-sm transition-transform duration-300 peer-checked:translate-x-6 peer-checked:border-slate-800 cursor-pointer">
+                    <label 
+                        for="switch-component-1"
+                        class="absolute top-0 left-0 w-5 h-5 bg-white rounded-full border border-slate-300 shadow-sm transition-transform duration-300 peer-checked:translate-x-6 peer-checked:border-slate-800 cursor-pointer"
+                    >
                     </label>
                 </div>
             </div>
@@ -72,8 +84,10 @@
 
         <!-- Dark Mode -->
         <li>
-            <div class="glass rounded-xl px-6 py-3 flex items-center md:gap-3 gap-40 shadow-xl transition-all duration-300 ease-out
-                hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+            <div 
+                class="glass rounded-xl px-6 py-3 flex items-center md:gap-3 gap-40 shadow-xl transition-all duration-300 ease-out
+                hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+            >
                 Dark Mode
                 <div class="relative inline-block w-11 h-5">
                     <input id="switch-component-2"
@@ -110,5 +124,46 @@
 
     </ul>
 </form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const checkbox = document.getElementById("switch-component-1");
+    const fields = document.querySelectorAll(".optional_required input");
+    const days = document.querySelectorAll(".day_optional_required");
+
+    function toggleFields() {
+        fields.forEach(field => {
+            field.disabled = !checkbox.checked;
+            field.required = checkbox.checked;
+        });
+        var at_least_one = false;
+        days.forEach(field => {
+            field.disabled = !checkbox.checked;
+            if (field.checked) {
+                at_least_one = true;
+            }
+        });
+        // this could be prettier
+        if (at_least_one === false) {
+            console.log(days[0])
+            days[0].required = true;
+        }
+
+    }
+
+    // Initial state on page load
+    toggleFields();
+
+    console.log(checkbox)
+    // Change on click
+    checkbox.addEventListener("change", toggleFields);
+    checkbox.addEventListener("click", () => {
+        console.log("click", checkbox.checked);
+    });
+    checkbox.addEventListener("change", () => {
+        console.log("change", checkbox.checked);
+    });
+});
+</script>
 
 {% endblock %}

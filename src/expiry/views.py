@@ -138,14 +138,16 @@ def items_list(request: HttpRequest):
     #todo clean input, or make sure dashboard.html sends same string
     filter = request.GET.get('filter')
     
-
     if not request.user.is_authenticated:
         return render(request, "login")
 
+    logger.debug(f"items_list getting user and items")
     user = User.objects.get(username=request.user.username)  
     items = Item.objects.filter(user=user)
 
-    context = {'items': items}
+    logger.debug(f"items: {items}")
+
+    context = {'items': list(items)}
 
     if filter == "frozen":
         # annotate adds extra rows ONLY to QuerySet, shouldn't be
@@ -161,6 +163,7 @@ def items_list(request: HttpRequest):
         ).order_by("is_frozen", "expiry_date")
 
         context['items'] = filtered # todo safe?
+    logger.debug(f"context: {context}")
 
     return render(request, 'expiry/items.html', context=context)
  
@@ -248,6 +251,7 @@ def add_item_view(request: HttpRequest):
         return redirect("login")
 
     if request.method == "POST":
+        logger.debug(f"add_item POST requested")
         form = AddItem(request.POST)
         if form.is_valid():
             item_name = form.cleaned_data['item_name']
@@ -256,7 +260,13 @@ def add_item_view(request: HttpRequest):
             quantity = form.cleaned_data['quantity']
 
             # TODO: Add database saving here
-            # Item.objects.create(name=item_name, expiry=expiry_date, qty=quantity)
+            Item.objects.create(
+                user=request.user,
+                item_name=item_name, 
+                expiry_date=expiry_date, 
+                item_category=item_category,
+                quantity=quantity
+            )
 
             messages.success(request, "Item added successfully!")
             return redirect("dashboard")
