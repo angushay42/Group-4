@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div class="relative bg-gradient-to-br from-green-400 to-green-600 -m-8 mb-0 p-8 pb-6 md:rounded-2xl">
+<div class="relative bg-gradient-to-br from-green-400 to-green-600 dark:shadow-black/30 dark:from-green-600 dark:to-green-800 -m-8 mb-0 p-8 pb-6 md:rounded-2xl">
     <div class="flex justify-between items-center">
         <h1 class="text-white text-3xl md:text-4xl md:font-bold">My Items</h1>
         <button class="relative bg-white/20 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white/30 transition-all">
@@ -12,13 +12,13 @@
     </div>
 </div>
 
-<ul class="flex flex-col gap-6 mt-8 rounded-2xl">
+<ul class="flex flex-col items-center gap-6 mt-8 rounded-2xl">
     <!-- todo sort by drop down @charlie -->
     {% for item in items %}
     <!-- load item contents, dunno how this should be styled -->
     <li>
         <div class="rounded-xl px-6 py-3 flex items-center justify-between gap-3 shadow-xl
-                hover:-translate-y-0.5 transition">
+                hover:-translate-y-0.5 transition dark:bg-gray-700 dark:border-gray-600 dark:text-white ">
             <div class="flex items-center gap-3">
                 <span class="material-symbols-outlined text-green-600">
                     {% if item.item_category == 'FRUIT' %}
@@ -42,7 +42,7 @@
                 </div>
 
                 <a href="{% url 'edit_item' item.id %}"
-                   class="text-green-600 hover:text-green-800">
+                   class="text-green-600 hover:text-green-800 dark:shadow-black/30 dark:from-green-600 dark:to-green-800 ">
                     <span class="material-symbols-outlined">edit</span>
                 </a>
             </div>
@@ -54,7 +54,7 @@
     <a href="{% url 'add_item' %}">
         <button id="glassBtn"
                 class="p-5 rounded-full backdrop-blur-xl bg-gradient-to-br from-green-400 to-green-600 border border-white/20
-           shadow-xl hover:bg-white/20 transition relative">
+           shadow-xl hover:bg-white/20 transition relative dark:shadow-black/30 dark:from-green-600 dark:to-green-800">
 
             <span class="absolute inset-0 rounded-2xl bg-white/20 opacity-0 hover:opacity-20 transition"></span>
 
