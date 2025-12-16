@@ -2,7 +2,6 @@ import json
 import os
 import logging
 import subprocess
-import threading
 import requests
 import time
 import os
@@ -18,10 +17,11 @@ from expiry.models import NotifJob
 from apscheduler.events import (
     EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MISSED
 )
-from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from django.test import TestCase, TransactionTestCase, Client
 from django.contrib.auth.models import User
+from django.core import mail
+from django.forms.models import model_to_dict
 
 # Create your tests here.
 # https://docs.djangoproject.com/en/5.2/topics/testing/overview/
@@ -276,6 +276,7 @@ class SchedulerTestCase(TransactionTestCase):
     # todo
     def test_modify_job(self):
         pass
+
 
 class JobServerTestCase(TransactionTestCase):
     BASE_URL = f"http://{SCHED_SERVER_URL}:{SCHED_SERVER_PORT}" # is http needed?
@@ -654,3 +655,26 @@ class JobServerTestCase(TransactionTestCase):
         self.assertEqual(response.status_code, 400) # bad request
         
         
+class NotificationTestCase(TransactionTestCase):
+
+    @classmethod
+    def email_to_dict(cls, email: mail.EmailMessage):
+        d = {k: getattr(email, k) for k in dir(email) if not k.startswith('_')}
+        return d
+    # Django uses in-memory backend for testing
+    def test_outbox(self):
+        mail.EmailMessage(
+            'test', 
+            'test body',
+            'from@example.com',
+            ['to@example.com'],
+        ).send(fail_silently=False)
+        self.assertIsNotNone(mail.outbox)
+        
+        debugger("email: {}".format(
+            json.dumps(
+                self.email_to_dict(mail.outbox[0]), 
+                indent=2,
+                default=lambda x: str(x)
+            )
+        ))

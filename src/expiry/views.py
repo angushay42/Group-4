@@ -20,7 +20,7 @@ import json
 
 logger = logging.getLogger('views')
 
-SOON_THRESH = 10  # todo
+SOON_THRESH = 1  # todo
 
 
 def startup(request: HttpRequest):
@@ -98,16 +98,7 @@ def signup_view(request: HttpRequest):
 
 
 def dashboard(request: HttpRequest):
-    """
-    tips from docs:
-    - instantiate form objects in views
-    - form instances have is_valid() method that attaches cleaned_data as an 
-    attribute
-    - if method=POST, pop the request.POST into the constructor (bind to 
-    form data)
-    - 
-    """
-
+    
     if not request.user.is_authenticated:  # limits access when not logged in
         return render(request, "login")  # redirect?
 
@@ -123,9 +114,9 @@ def dashboard(request: HttpRequest):
     context = {
         'items': items,
         "totals": {
-            'frozen': len(items.filter(storage_type=Item.FREEZER)),
-            'total': len(items),
-            'soon': len(items.filter(expiry_date__lte=expiry_threshold)),
+            'frozen': items.filter(storage_type=Item.FREEZER).count(),
+            'total': items.count(),
+            'soon': items.filter(expiry_date__lte=expiry_threshold).count(),
         }
     }
 
@@ -198,6 +189,7 @@ def settings(request: HttpRequest):
         )}"
     )
 
+    # BUG 
     if request.method == 'POST':
         form = forms.SettingsForm(request.POST)
 
