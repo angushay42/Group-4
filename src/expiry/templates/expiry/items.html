@@ -13,14 +13,42 @@
 </div>
 
 <ul class="flex flex-col gap-6 mt-8 rounded-2xl">
-<!-- todo sort by drop down @charlie -->
-{% for item in items %}
+    <!-- todo sort by drop down @charlie -->
+    {% for item in items %}
     <!-- load item contents, dunno how this should be styled -->
-     <li>
-        <label>{{ item }}</label>
-     </li>
-{% endfor %}
+<li>
+    <div class="rounded-xl px-6 py-3 flex items-center justify-between gap-3 shadow-xl
+                hover:-translate-y-0.5 transition">
+
+        <div class="flex flex-col">
+            <span>{{ item.item_name }}</span>
+            <span class="text-sm text-gray-500">{{ item.expiry_date }}</span>
+        </div>
+
+        <a href="{% url 'edit_item' item.id %}"
+           class="text-green-600 hover:text-green-800">
+            <span class="material-symbols-outlined">edit</span>
+        </a>
+    </div>
+</li>
+    {% endfor %}
 </ul>
+
+<div class="flex justify-center mt-8">
+    <a href="{% url 'add_item' %}">
+        <button id="glassBtn"
+                class="p-5 rounded-full backdrop-blur-xl bg-gradient-to-br from-green-400 to-green-600 border border-white/20
+           shadow-xl hover:bg-white/20 transition relative">
+
+            <span class="absolute inset-0 rounded-2xl bg-white/20 opacity-0 hover:opacity-20 transition"></span>
+
+            <span id="icon"
+                  class="material-symbols-outlined text-white text-4xl transition-transform duration-300">
+        add_2
+        </span>
+        </button>
+    </a>
+</div>
 <!-- todo add button to add form -->
 
 {% endblock %}

@@ -173,7 +173,6 @@ class LoginTestCase(TransactionTestCase):
 
 
 class SchedulerTestCase(TransactionTestCase):
-    
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -193,6 +192,17 @@ class SchedulerTestCase(TransactionTestCase):
                 
         cls.scheduler.start()
         
+    # todo
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+
+        # todo delete all entries
+
+        bef = time.time()
+        cls.scheduler.shutdown()
+        debugger(f"scheduler took {time.time() - bef:3f} seconds to shutdown.")
+
     @classmethod
     def job_executed_listener(cls, event):
         print(f"!!! JOB EXECUTED EVENT: {event}")
@@ -210,18 +220,6 @@ class SchedulerTestCase(TransactionTestCase):
         print(f"!!! JOB MISSED EVENT: {event}")
         cls.job_events.append(('missed', event))
     
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
-        # todo delete all entries
-
-        bef = time.time()
-        cls.scheduler.shutdown()
-        debugger(f"scheduler took {time.time() - bef:3f} seconds to shutdown.")
-
-        # should be fine
-   
     def setUp(self):
         super().setUp()
 
@@ -270,7 +268,15 @@ class SchedulerTestCase(TransactionTestCase):
         global test_executed
         self.assertTrue(test_executed)
 
-    
+    # todo
+    def test_delete_job(self):
+        pass
+
+
+    # todo
+    def test_modify_job(self):
+        pass
+
 class JobServerTestCase(TransactionTestCase):
     BASE_URL = f"http://{SCHED_SERVER_URL}:{SCHED_SERVER_PORT}" # is http needed?
 
