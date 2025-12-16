@@ -172,12 +172,7 @@ class LoginTestCase(TransactionTestCase):
         self.assertEqual(response.status_code, 302)
 
 
-def dummy_test_public():
-    global test_executed
-    test_executed = True
-
 class SchedulerTestCase(TransactionTestCase):
-    
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -190,19 +185,24 @@ class SchedulerTestCase(TransactionTestCase):
         cls.scheduler = set_scheduler(debug=True)
         cls.scheduler = get_scheduler()
 
-        # Add event listeners to track what's happening
+        # add event listeners to track what's happening
         cls.scheduler.add_listener(cls.job_executed_listener, EVENT_JOB_EXECUTED)
         cls.scheduler.add_listener(cls.job_error_listener, EVENT_JOB_ERROR)
         cls.scheduler.add_listener(cls.job_missed_listener, EVENT_JOB_MISSED)
-        
-        print(f"Executors: {cls.scheduler._executors}")
-        print(f"Jobstores: {cls.scheduler._jobstores}")
-        
+                
         cls.scheduler.start()
         
-        print(f"Scheduler running: {cls.scheduler.running}")
-        print(f"Scheduler state: {cls.scheduler.state}")
-        
+    # todo
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+
+        # todo delete all entries
+
+        bef = time.time()
+        cls.scheduler.shutdown()
+        debugger(f"scheduler took {time.time() - bef:3f} seconds to shutdown.")
+
     @classmethod
     def job_executed_listener(cls, event):
         print(f"!!! JOB EXECUTED EVENT: {event}")
@@ -219,16 +219,7 @@ class SchedulerTestCase(TransactionTestCase):
     def job_missed_listener(cls, event):
         print(f"!!! JOB MISSED EVENT: {event}")
         cls.job_events.append(('missed', event))
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
-        bef = time.time()
-        cls.scheduler.shutdown()
-        debugger(f"scheduler took {time.time() - bef:3f} seconds to shutdown.")
-
-        # should be fine
-   
+    
     def setUp(self):
         super().setUp()
 
@@ -240,9 +231,6 @@ class SchedulerTestCase(TransactionTestCase):
     def dummy_job():
         global test_executed
         test_executed = True
-        with open('test.txt', 'a') as f:    
-            print(f"dummy job executing at {time.time()}", file=f)
-
 
     def _add_job(self):
         delta = (
@@ -257,7 +245,7 @@ class SchedulerTestCase(TransactionTestCase):
             timezone=TIME_ZONE
         )
         job = self.scheduler.add_job(
-            dummy_test_public,
+            self.dummy_job,
             trigger=trig,
         )
         return job
@@ -280,7 +268,15 @@ class SchedulerTestCase(TransactionTestCase):
         global test_executed
         self.assertTrue(test_executed)
 
-    
+    # todo
+    def test_delete_job(self):
+        pass
+
+
+    # todo
+    def test_modify_job(self):
+        pass
+
 class JobServerTestCase(TransactionTestCase):
     BASE_URL = f"http://{SCHED_SERVER_URL}:{SCHED_SERVER_PORT}" # is http needed?
 
