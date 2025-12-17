@@ -191,6 +191,7 @@ def settings(request: HttpRequest):
         form = forms.SettingsForm(request.POST)
 
         if form.is_valid():
+            notif_enabled = form.cleaned_data.get('notifications', False)
             
             if form.cleaned_data.get('notifications', False) == False:
                 # todo delete jobs
@@ -222,7 +223,6 @@ def settings(request: HttpRequest):
                     except:  # something?
                         logger.debug(f"CRITICAL ERROR: Could not connect to Scheduler server")
             # save settings
-            notif_enabled = form.cleaned_data['notifications'] 
             _settings.notifications = bool(notif_enabled)
             _settings.notification_days = notif_days if notif_enabled else None
             _settings.notification_time = notif_time if notif_enabled else None

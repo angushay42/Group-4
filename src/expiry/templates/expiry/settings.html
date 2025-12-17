@@ -54,17 +54,17 @@
         <!-- todo this could be greyed out @charlie -->
         <li>
             <div 
-                class="glass rounded-xl px-6 py-4 shadow-xl optional_required dark:bg-gray-700 dark:border-gray-600"
+                class="glass rounded-xl px-6 py-4 shadow-xl dark:bg-gray-700 dark:border-gray-600"
             >
-                <label class="block mb-3 text-sm text-heading">Notification Time</label>
+                <label class="block mb-3 text-sm text-heading optional_required">Notification Time
                 <input 
                     type="time"
                     name="notification_time"
-                    value="{{ settings.notification_time.value|default:'' }}"
+                    value="{{ settings.notification_time|time_default }}"
                     class="w-full px-3 py-2 bg-neutral-secondary-medium border-default-medium rounded-lg focus:ring-green-500 focus:ring-2 focus:outline-none text-heading"
-                    disabled="{{ settings|disabled}}"
-                    {{ settings|required }}
+                    {{ settings|disabled}}
                 >
+                </label>
             </div>
         </li>
 
@@ -140,7 +140,6 @@
 </form>
 
 
-<!-- BUG checkbox thinks it isnt checked -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const checkbox = document.getElementById("switch-component-1");
@@ -152,8 +151,8 @@ document.addEventListener("DOMContentLoaded", function () {
         var alo = false;
         days.forEach(field => {
             field.disabled = !checkbox.checked;
-            console.log(" field checked: " + field.checked);
             alo |= field.checked;
+
         });
         return alo;
     }
@@ -166,6 +165,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function toggleFields() {
+
         fields.forEach(field => {
             field.disabled = !checkbox.checked;
             field.required = checkbox.checked;
@@ -173,7 +173,6 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // this could be prettier
         if (atLeastOne() === false) {
-            console.log(days[0].checked);
             days.forEach(day => {
                 day.required = true;
             })
@@ -192,12 +191,7 @@ document.addEventListener("DOMContentLoaded", function () {
         day.addEventListener('change', buttonToggle);
     });
     checkbox.addEventListener("change", toggleFields);
-    checkbox.addEventListener("click", () => {
-        console.log("click", checkbox.checked);
-    });
-    checkbox.addEventListener("change", () => {
-        console.log("change", checkbox.checked);
-    });
+    
 });
 </script>
 
