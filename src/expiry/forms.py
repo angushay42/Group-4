@@ -112,8 +112,9 @@ class AddItem(forms.Form):
     item_name = forms.CharField(
         required=True,
         max_length=50,
+        label="Item Name",
         widget=forms.TextInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '
+            'class':    'border w-full text-base px-2 py-1 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 '
                         'focus:ring-0 focus:border-green-600 rounded-xl',
             'placeholder': 'Enter item name'
         })
@@ -122,8 +123,9 @@ class AddItem(forms.Form):
     item_category = forms.ChoiceField(
         required=True,
         choices= Item.ITEM_CHOICES,
+        label="Category",
         widget=forms.Select(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '
+            'class':    'border w-full text-base px-2 py-1 focus:outline-none  dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400'
                         'focus:ring-0 focus:border-green-600 rounded-xl',
             'placeholder': 'e.g., Fruit, Dairy, Vegetables'
         })
@@ -133,7 +135,7 @@ class AddItem(forms.Form):
         min_value=1,
         required=True,
         widget=forms.NumberInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '
+            'class':    'border w-full text-base px-2 py-1 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400'
                         'focus:ring-0 focus:border-green-600 rounded-xl',
             'placeholder': 'Quantity'
         })
@@ -142,12 +144,12 @@ class AddItem(forms.Form):
     expiry_date = forms.DateField(
         required=True,
         widget=forms.DateInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '
+            'class':    'border w-full text-base px-2 py-1 focus:outline-none  dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400'
                         'focus:ring-0 focus:border-green-600 rounded-xl',
             'placeholder': 'YYYY-MM-DD',
             'type': 'date',
         })
-    )     
+    )
 
 
     def clean(self):
@@ -174,14 +176,16 @@ class SettingsForm(forms.Form):
     notification_days = forms.MultipleChoiceField(
         choices=Days,
         widget=forms.CheckboxSelectMultiple(attrs={
-            'class': 'w-4 h-4 text-green-600 bg-neutral-secondary-medium border-default-medium rounded focus:ring-green-500 focus:ring-2'
+            'class': 'w-4 h-4 text-green-600 bg-neutral-secondary-medium border-default-medium rounded dark:border-gray-600 focus:ring-green-500 focus:ring-2'
         }),
         required=False,
     )
 
     notification_time = forms.TimeField(
         required=False  ,
-        widget=forms.TimeInput(attrs={}),
+        widget=forms.TimeInput(attrs={
+            'class': "dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+        }),
         initial = time(9,30)
     )
 

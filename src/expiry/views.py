@@ -167,17 +167,15 @@ def settings(request: HttpRequest):
     if not request.user.is_authenticated:
         return render(request, "login")
 
-    # load user settings
     user = User.objects.get(username=request.user.username)
 
-    # private to avoid overriding 
     _settings, created = UserSettings.objects.get_or_create(
         user=request.user,
         defaults={
             'notifications': False,
             'dark_mode': False,
             'notification_time': datetime.time(9, 30),
-            'notification_days': 0,
+            'notification_days': [],
         }
     )
 
@@ -189,7 +187,6 @@ def settings(request: HttpRequest):
         )}"
     )
 
-    # BUG 
     if request.method == 'POST':
         form = forms.SettingsForm(request.POST)
 
@@ -206,15 +203,11 @@ def settings(request: HttpRequest):
                 notif_days = [int(x) for x in notif_days]
                 logger.debug(f"{notif_days}")
 
+            if notif_enabled:
                 if not (
                         notif_time == _settings.notification_time
                         and notif_days == _settings.notification_days
                 ):
-                    # idea if we add functionality for customising data view,\
-                    # we may need to delete old jobs
-
-                    # todo wrap this as a function
-                    # make a request to scheduler server
                     url = f"http://{django_settings.SCHED_SERVER_URL}:{django_settings.SCHED_SERVER_PORT}"
                     params = {
                         'user': user.username,
@@ -223,13 +216,8 @@ def settings(request: HttpRequest):
                     }
 
                     try:
-                        response = requests.get(
-                            url=url,
-                            params=params,
-                        )
-                        # check that response is OK
+                        response = requests.get(url=url, params=params)
                         if not response.status_code == 200:
-                            # todo create custom exception for this app
                             raise TypeError
                     except:  # something?
                         logger.debug(f"CRITICAL ERROR: Could not connect to Scheduler server")
@@ -239,11 +227,23 @@ def settings(request: HttpRequest):
             _settings.notification_days = notif_days if notif_enabled else None
             _settings.notification_time = notif_time if notif_enabled else None
             _settings.dark_mode = form.cleaned_data['dark_mode']
-
             _settings.save()
 
+            messages.success(request, "Settings saved!")
+            return redirect('settings')
+
     else:
-        form = forms.SettingsForm()
+        # Pre-populate form with current settings
+        notif_days_initial = []
+        if _settings.notification_days:
+            notif_days_initial = [str(d) for d in _settings.notification_days]
+
+        form = forms.SettingsForm(initial={
+            'notifications': _settings.notifications,
+            'dark_mode': _settings.dark_mode,
+            'notification_time': _settings.notification_time,
+            'notification_days': notif_days_initial,
+        })
 
     context = {
         'settings': _settings,
@@ -276,7 +276,7 @@ def add_item_view(request: HttpRequest):
             )
 
             messages.success(request, "Item added successfully!")
-            return redirect("dashboard")
+            return redirect("items")
     else:
         form = AddItem()
 
