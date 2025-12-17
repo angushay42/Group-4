@@ -185,7 +185,7 @@ def settings(request: HttpRequest):
         f"{json.dumps(
             model_to_dict(_settings),
             indent=2, 
-            default=lambda x: str(x)
+            default=lambda x: str(x) if x is not None else ""
         )}"
     )
 
@@ -195,18 +195,19 @@ def settings(request: HttpRequest):
 
         if form.is_valid():
             
-            if form.cleaned_data['notifications'] == False:
+            if form.cleaned_data.get('notifications', False) == False:
                 # todo delete jobs
                 pass
             else:
                 notif_time: datetime.time = \
-                    form.cleaned_data['notification_time']
-
-                notif_days = [int(x) for x in form.cleaned_data['notification_days']]
+                    form.cleaned_data.get('notification_time', False)
+                logger.debug('getting notification_days')
+                notif_days = form.cleaned_data.get('notification_days', [])
+                notif_days = [int(x) for x in notif_days]
                 logger.debug(f"{notif_days}")
 
                 if not (
-                        notif_time == _settings.notification_time  # todo 'QuerySet' object has no attribute 'notification_time'
+                        notif_time == _settings.notification_time
                         and notif_days == _settings.notification_days
                 ):
                     # idea if we add functionality for customising data view,\
@@ -233,8 +234,8 @@ def settings(request: HttpRequest):
                     except:  # something?
                         logger.debug(f"CRITICAL ERROR: Could not connect to Scheduler server")
             # save settings
-            notif_enabled = form.cleaned_data['notifications']
-            _settings.notifications = notif_enabled
+            notif_enabled = form.cleaned_data['notifications'] 
+            _settings.notifications = bool(notif_enabled)
             _settings.notification_days = notif_days if notif_enabled else None
             _settings.notification_time = notif_time if notif_enabled else None
             _settings.dark_mode = form.cleaned_data['dark_mode']

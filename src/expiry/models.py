@@ -57,8 +57,8 @@ class UserSettings(models.Model):
     )
     notifications = models.BooleanField()
     dark_mode = models.BooleanField()
-    notification_time = models.TimeField() 
-    notification_days = models.JSONField(default=list)
+    notification_time = models.TimeField(null=True) 
+    notification_days = models.JSONField(default=list, null=True)
     
     #TODO account settings
 
