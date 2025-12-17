@@ -62,7 +62,7 @@
                     name="notification_time"
                     value="{{ settings.notification_time.value|default:'' }}"
                     class="w-full px-3 py-2 bg-neutral-secondary-medium border-default-medium rounded-lg focus:ring-green-500 focus:ring-2 focus:outline-none text-heading"
-                    disabled={{ settings|disabled}}
+                    disabled="{{ settings|disabled}}"
                     {{ settings|required }}
                 >
             </div>
