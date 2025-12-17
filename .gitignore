@@ -11,3 +11,4 @@ Procfile*
 _sched_test.py
 
 _test.py
+.env*

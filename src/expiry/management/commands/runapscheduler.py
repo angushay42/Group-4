@@ -22,7 +22,7 @@ from expiry.routers import router
 from expiry.scheduler_inst import get_scheduler, set_scheduler
 from group4.settings import (
     SCHED_SERVER_PORT, SCHED_SERVER_URL,
-    ENV_PATH
+    ENV_PATH, TEST_ENV_PATH
 )
 
 logger = logging.getLogger("jobs")
@@ -43,6 +43,7 @@ logger.debug(
 )
 
 # this should be moved to a separate file, too tightly coupled
+debugger(f"APP INCLUDED HERE")
 app = FastAPI()
 app.include_router(router=router)
 
@@ -89,8 +90,6 @@ async def auth_requests(request: Request, call_next):
     response = await call_next(request)
     return response
 
-
-
 # The `close_old_connections` decorator ensures that database connections, that have become
 # unusable or are obsolete, are closed before and after your job has run. You should use it
 # to wrap any jobs that you schedule that access the Django database in any way. 
@@ -106,6 +105,8 @@ def delete_old_job_executions(max_age=604_800):
     """
     DjangoJobExecution.objects.delete_old_job_executions(max_age)
 
+def dummy_job():
+    print('dummy job')
 
 class Command(BaseCommand):
     help = "Runs APScheduler."

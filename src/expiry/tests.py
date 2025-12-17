@@ -9,7 +9,7 @@ import dotenv
 import datetime
 
 from group4.settings import (
-    SCHED_SERVER_PORT, SCHED_SERVER_URL, ENV_PATH, TIME_ZONE
+    SCHED_SERVER_PORT, SCHED_SERVER_URL, ENV_PATH, TIME_ZONE, TEST_ENV_PATH
 )
 from expiry.scheduler_inst import get_scheduler, set_scheduler
 from expiry.models import NotifJob
@@ -18,7 +18,10 @@ from apscheduler.events import (
     EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MISSED
 )
 from apscheduler.triggers.cron import CronTrigger
-from django.test import TestCase, TransactionTestCase, Client
+from django.test import (
+    TestCase, TransactionTestCase, Client
+)
+from unittest import SkipTest
 from django.contrib.auth.models import User
 from django.core import mail
 from django.forms.models import model_to_dict
@@ -41,6 +44,7 @@ def debugger(message: str):
 # environment init
 debugger(f"{__name__} setting up environment...")
 os.environ.update(dotenv.dotenv_values(ENV_PATH))
+os.environ.update(dotenv.dotenv_values(TEST_ENV_PATH))
 
 
 class StartupTestCase(TestCase):
@@ -65,6 +69,7 @@ class LoginTestCase(TransactionTestCase):
         cls.headers = {
             'Authorization': f"Bearer {os.environ.get('API_KEY')}"
         }
+        logger.debug(("=" * 50) + '\n' + ("="*50) + f'\nStart testing for {cls.__name__}\n' + ("=" * 50) + '\n' + ("="*50))
 
     @classmethod
     def tearDownClass(cls):
@@ -278,11 +283,32 @@ class SchedulerTestCase(TransactionTestCase):
         pass
 
 
+class SecurityTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.username = 'test'
+        cls.password = os.environ.get('TEST_PASS')
+
+    def test_password_hash(self):
+        user, created = User.objects.get_or_create(
+            username=self.username,
+        )
+        if created:
+            user.set_password(self.password)
+            user.save()
+
+        self.assertNotEqual(self.password, user.password)
+
+
+
 class JobServerTestCase(TransactionTestCase):
     BASE_URL = f"http://{SCHED_SERVER_URL}:{SCHED_SERVER_PORT}" # is http needed?
 
     @classmethod
     def setUpClass(cls):
+        logger.debug(("=" * 50) + '\n' + ("="*50) + f'\nStart testing for {cls.__name__}\n' + ("=" * 50) + '\n' + ("="*50))
+
         logger.debug(f"Setting up {cls.__name__}")
 
         # get api key from environment
@@ -295,6 +321,7 @@ class JobServerTestCase(TransactionTestCase):
 
         cls.test_email ="working@email.com"
         cls.test_pass = os.environ['TEST_PASS']
+        cls.test_job_id = os.environ.get('TEST_JOB_ID')
 
 
         # server and scheduler init
@@ -303,10 +330,6 @@ class JobServerTestCase(TransactionTestCase):
         )
 
         env = os.environ.copy()
-
-        # todo dunno if still needed..? 
-        # call_command('makemigrations')
-        # call_command('migrate', verbosity=1, interactive=False)
 
         cls.serv_proc = subprocess.Popen(
             ["python3", "manage.py", "runapscheduler", "-t"],
@@ -320,11 +343,29 @@ class JobServerTestCase(TransactionTestCase):
             "Content-type":     "Application/json",
             "Authorization":    f"Bearer {api_key}"
         }
-        
+
         # wait for subprocess init
         time.sleep(1)
 
-        super().setUpClass()    # todo needed?
+        response = requests.post(
+            f"{cls.BASE_URL}/_clear_jobs",
+            headers=cls.headers
+        )
+        debugger(f"delete all jobs response: {response.text} and {response.status_code}")
+        response = requests.post(
+            f"{cls.BASE_URL}/_add_job",
+            params={
+                "job_id": cls.test_job_id
+            },
+            headers=cls.headers
+        )
+        debugger(f"test add job class setup response: {response.text} and {response.status_code}")
+        if response.status_code != 200:
+            cls.serv_proc.terminate()
+            time.sleep(0.2)
+            raise SkipTest("Add_job not available")
+
+
 
     @classmethod
     def tearDownClass(cls):
@@ -349,16 +390,22 @@ class JobServerTestCase(TransactionTestCase):
         )
         logger.debug(f"test user created: {self.user.pk}")
 
-        self.test_job_id = "420"
         self.test_job = NotifJob.objects.create(
             user=self.user,
             job_id=self.test_job_id
         )
 
-        logger.debug(
-            f"test job created: {self.test_job.job_id}"
+        response = requests.post(
+            f"{self.BASE_URL}/_add_job",
+            params={"job_id": self.test_job_id},
+            headers=self.headers
         )
-    
+
+        if not (response.status_code == 200
+            or response.status_code == 400):
+            logger.debug(f"CRITICAL ERROR: could not add scheduled job")
+            raise TypeError("Error adding scheduled job")       # todo base exception
+        
     def tearDown(self):
         super().tearDown()
         logger.debug(f"tearing down each test job")
@@ -371,9 +418,21 @@ class JobServerTestCase(TransactionTestCase):
             logger.debug(f"user does not exist")
 
         if NotifJob.objects.filter(job_id=self.test_job_id).exists():
-            logger.debug(f"deleting test job")
+            logger.debug(f"deleting database job")
             self.test_job.delete()
-    
+
+        logger.debug(f"directly deleting scheduled job")
+        response = requests.post(
+            f"{self.BASE_URL}/_del_job",
+            params={"job_id": self.test_job_id},
+            headers=self.headers
+        )
+
+        if not (response.status_code == 200
+            or response.status_code == 400):
+            logger.debug(f"CRITICAL ERROR: could not delete scheduled job: {response.text} {response.status_code}")
+            raise TypeError("Error deleting scheduled job")     # todo base exception
+
     def test_health_check(self):
         logger.debug(
             f"health test called"

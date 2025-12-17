@@ -31,7 +31,8 @@ SECRET_KEY = 'django-insecure-_63i9njj5oiin9+4e)in5ms08-1(qu)hob5bwt(j25d6^6mwt#
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ENV_PATH = BASE_DIR / 'expiry/.env/'
+ENV_PATH = BASE_DIR / 'expiry/.env.standard'
+TEST_ENV_PATH = BASE_DIR / 'expiry/.env.test'
 
 ALLOWED_HOSTS = []
 
@@ -96,12 +97,6 @@ WSGI_APPLICATION = 'group4.wsgi.application'
 
 TEST_RUNNER = 'expiry.integration_test_runner.IntegrationRunner'
 
-with open('tests.txt', "a") as f:
-    # todo
-    print("="*50, file=f)
-    print(f"settings accessed", file=f)
-    print(f"{os.environ.get('DJANGO_TEST_DB')}", file=f)
-    print("="*50, file=f)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',

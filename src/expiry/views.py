@@ -17,10 +17,19 @@ import logging
 import datetime
 import requests
 import json
+import os
+import dotenv
 
 logger = logging.getLogger('views')
 
 SOON_THRESH = 1  # todo
+SCHED_URL = f"http://{django_settings.SCHED_SERVER_URL}:{django_settings.SCHED_SERVER_PORT}"
+HEADERS = {
+    'Authorization': f"Bearer {os.environ.get('API_KEY')}",
+    'Content-Type': 'application/json'
+}
+
+os.environ.update(dotenv.dotenv_values(django_settings.ENV_PATH))
 
 
 def startup(request: HttpRequest):
@@ -162,10 +171,38 @@ def items_list(request: HttpRequest):
 
     return render(request, 'expiry/items.html', context=context)
 
+def scheduler_delete(data: dict) -> requests.Response | None:
+    response = None
+    try:
+        response = requests.post(
+            f"{SCHED_URL}/delete_notifications",
+            headers=HEADERS,
+            data=data
+        )
+    except requests.exceptions.RequestException as e:
+        logger.debug(f"ERROR: could not communicate with scheduler {e.request}")
+    
+    return response
+
+
+def scheduler_add(data: dict) -> requests.Response:
+    response = None
+    try:
+        response = requests.post(
+            f"{SCHED_URL}/delete_notifications",
+            headers=HEADERS,
+            data=data
+        )
+    except requests.exceptions.RequestException as e:
+        logger.debug(f"ERROR: could not communicate with scheduler {e.request}")
+    
+    return response
 
 def settings(request: HttpRequest):
     if not request.user.is_authenticated:
         return render(request, "login")
+    
+
 
     user = User.objects.get(username=request.user.username)
 
@@ -194,8 +231,13 @@ def settings(request: HttpRequest):
             notif_enabled = form.cleaned_data.get('notifications', False)
             
             if form.cleaned_data.get('notifications', False) == False:
-                # todo delete jobs
-                pass
+                data = {
+                    "job_id": "",
+                    "user_id": user.pk
+                }
+                response = scheduler_delete(data)
+                if response and not response.status_code == 200:
+                    raise TypeError     # todo application exception
             else:
                 notif_time: datetime.time = \
                     form.cleaned_data.get('notification_time', False)
@@ -209,19 +251,18 @@ def settings(request: HttpRequest):
                         notif_time == _settings.notification_time
                         and notif_days == _settings.notification_days
                 ):
-                    url = f"http://{django_settings.SCHED_SERVER_URL}:{django_settings.SCHED_SERVER_PORT}"
-                    params = {
+                    data = {
                         'user': user.username,
                         'time': notif_time,
                         'day_of_week': notif_days
                     }
 
-                    try:
-                        response = requests.get(url=url, params=params)
-                        if not response.status_code == 200:
-                            raise TypeError
-                    except:  # something?
-                        logger.debug(f"CRITICAL ERROR: Could not connect to Scheduler server")
+                    response = scheduler_add(data)
+                    # todo if response is None (no scheduler), what to do?
+
+                    if response and not response.status_code == 200:
+                        raise TypeError     # todo application exception
+                    
             # save settings
             _settings.notifications = bool(notif_enabled)
             _settings.notification_days = notif_days if notif_enabled else None

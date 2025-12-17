@@ -39,13 +39,17 @@ class JobPackage(BaseModel):
     user_id: int | None = None
     job_id: str | None = None
 
-
+# ------------------ Utilities ------------------
 def debugger(message: str):
     logger.debug(f"=" * 50)
     logger.debug(message)
     logger.debug(f"=" * 50)
 
+def dummy_job():
+    logger.debug(f"Dummy job fired")
 
+
+# ------------------ Routes ---------------------
 @router.post('/add_notification')
 async def add_notification(
     notif: NotificationPackage,
@@ -180,6 +184,7 @@ async def delete_notification(
                 f"trying job_id {body.job_id}..."
             )
 
+            # todo remove this
             all_ = await sync_to_async(NotifJob.objects.all)()
             all_ = await sync_to_async(list)(all_)
             logger.debug(
@@ -190,9 +195,10 @@ async def delete_notification(
                 job_id=body.job_id
             )
             logger.debug(
-                f"job_id returned job {job}"
+                f"job_id returned job {job}. body: {body.job_id}, job: {job.job_id}"
             )
             # delete job
+            await sync_to_async(scheduler.remove_job)(job.job_id)
             await sync_to_async(job.delete)()
             logger.debug(
                 f"job deleted"
@@ -223,6 +229,7 @@ async def delete_notification(
 
             # go through jobs and delete
             for job in jobs:
+                await sync_to_async(scheduler.remove_job)(job.job_id)
                 await sync_to_async(job.delete)()
             logger.debug(
                 f"user jobs deleted"
@@ -239,8 +246,11 @@ async def delete_notification(
 
     return {"message": "deletion succcessful"}
 
+
 @router.get('/health')
-async def health(scheduler = Depends(get_scheduler)):
+async def health(
+    scheduler = Depends(get_scheduler)
+):
     logger.debug(
         f"/health requested"
     )
@@ -250,15 +260,85 @@ async def health(scheduler = Depends(get_scheduler)):
     )
     return {"status": "active"}
 
+# ------------------ Testing Routes -------------
 
-# query database for notification preferences
-# params = notif_preferences
+async def _add_job(
+    job_id: str, 
+    response: Response,
+    scheduler: Annotated[BaseScheduler, Depends(get_scheduler)]
+):
+    """Add a job directly to scheduler. FOR TESTING ONLY. """
+    logger.debug(f"testing _add_job test method")
+    jobs = await sync_to_async(scheduler.get_jobs)()
+    if any([job.id == job_id for job in jobs]):
+        logger.debug(
+            f"invalid job id: {job_id}"
+        )
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return {"error": "job already exists"}
 
-# query database using params
-# content = database(params)
+    await sync_to_async (scheduler.add_job)(
+        dummy_job, 
+        trigger=CronTrigger(day=20),
+        id=job_id
+    )
+    response.status_code = 200  # success
+    return {"message": "job added successfully"}
 
-# convert data to email format
-# formatted = convert(email)
+async def _del_job(
+    job_id: str, 
+    response: Response,
+    scheduler: Annotated[BaseScheduler, Depends(get_scheduler)]
+):
+    """Delete a job directly from scheduler. FOR TESTING ONLY. """
+    logger.debug(f"testing _del_job test method")
+    jobs = await sync_to_async(scheduler.get_jobs)()
+    if not any([job.id == job_id for job in jobs]):     # not any == none
+        logger.debug(
+            f"invalid job id: {job_id}"
+        )
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return {"error": "job does not exist"}
 
-# address = user.email
-# send_email(user.email, content)
+    await sync_to_async (scheduler.remove_job)(job_id=job_id)
+
+    response.status_code = 200  # created
+    return {"message": "job deleted successfully"}
+
+
+async def _clear_jobs(
+    response: Response,
+    scheduler: Annotated[BaseScheduler, Depends(get_scheduler)]
+):
+    """Delete ALL jobs from scheduler. FOR TESTING ONLY. """
+    logger.debug(f"deleting all jobs from scheduler...")
+    try:
+        await sync_to_async(scheduler.remove_all_jobs)()
+    except TypeError as e:
+        logger.debug(f"CRITICAL ERROR: could not delete all jobs: {e}")
+        response.status_code = 400
+    response.status_code = 200
+    return {'message': 'deleted all jobs successfully'}
+
+
+# ------------------ Adding routes --------------
+if os.environ.get('TESTING') == "1":
+    # todo add more
+    router.add_api_route(
+        '/_add_job', 
+        _add_job,
+        methods=['POST'],
+        dependencies=[Depends(get_scheduler)]
+    )
+    router.add_api_route(
+        '/_del_job', 
+        _del_job,
+        methods=['POST'],
+        dependencies=[Depends(get_scheduler)]
+    )
+    router.add_api_route(
+        '/_clear_jobs', 
+        _clear_jobs,
+        methods=['POST'],
+        dependencies=[Depends(get_scheduler)]
+    )
