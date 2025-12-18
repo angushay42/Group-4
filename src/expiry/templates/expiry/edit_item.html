@@ -20,20 +20,31 @@
 
 <div class="flex flex-row mx-auto px-4 py-8 ">
     <div class="max-w-md mx-auto bg-white rounded-lg p-6 text-base font-medium text-gray-700 dark:bg-gray-800 dark:shadow-black/30 dark:text-gray-200" >
+        <!-- update form -->
         <form method="post" class="space-y-6">
             {% csrf_token %}
             {{ form.as_p }}
-            <button class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold  py-4 px-6 rounded-xl transition duration-200 dark:bg-green-700 dark:hover:bg-green-600"
-                    type="submit">Save Changes
+            <button 
+                class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold  py-4 px-6 rounded-xl transition duration-200 dark:bg-green-700 dark:hover:bg-green-600"
+                type="submit"
+                name="action"
+                value="update"
+            >Save Changes
             </button>
-            <a class="w-full bg-red-500 text-white font-semibold py-4 px-6 rounded-xl transition duration-200  flex justify-center dark:bg-red-600 dark:hover:bg-red-500"
-               href="{% url 'items' %}">
-                Cancel
-            </a>
+            <button 
+                class="w-full bg-red-500 text-white font-semibold py-4 px-6 rounded-xl transition duration-200  flex justify-center dark:bg-red-600 dark:hover:bg-red-500"
+                type="submit"
+                id="delete_button"
+                name="action"
+                value="delete"
+            >
+                Delete
+            </button>
         </form>
 
 
     </div>
 </div>
+
 
 {% endblock %}

@@ -4,6 +4,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http.request import HttpRequest
+from django.http.response import HttpResponse
 from django.utils import timezone
 from django.db.models import Case, When, IntegerField
 from django.forms.models import model_to_dict
@@ -112,7 +113,7 @@ def dashboard(request: HttpRequest):
         return render(request, "login")  # redirect?
 
     user = User.objects.get(username=request.user.username)
-    items = Item.objects.filter(user=user)
+    items = Item.objects.filter(user=user, deleted=False)
 
     # get total, expires soon, frozen
     expiry_threshold = (
@@ -123,9 +124,9 @@ def dashboard(request: HttpRequest):
     context = {
         'items': items,
         "totals": {
-            'frozen': items.filter(storage_type=Item.FREEZER).count(),
+            'frozen': items.filter(storage_type=Item.FREEZER, deleted=False).count(),
             'total': items.count(),
-            'soon': items.filter(expiry_date__lte=expiry_threshold).count(),
+            'soon': items.filter(expiry_date__lte=expiry_threshold, deleted=False).count(),
         }
     }
 
@@ -147,12 +148,13 @@ def items_list(request: HttpRequest):
 
     logger.debug(f"items_list getting user and items")
     user = User.objects.get(username=request.user.username)
-    items = Item.objects.filter(user=user)
+    items = Item.objects.filter(user=user, deleted=False)
 
     logger.debug(f"items: {items}")
 
     context = {'items': list(items)}
 
+    # todo filtering
     if filter == "frozen":
         # annotate adds extra rows ONLY to QuerySet, shouldn't be
         # too much overhead
@@ -271,6 +273,9 @@ def settings(request: HttpRequest):
 def history(request: HttpRequest):
     if not request.user.is_authenticated:
         return render(request, "login")
+    
+    user = User.objects.get(id=request.user.pk)
+    items = Item.objects.filter(deleted=True).order_by("-expiry_date")
 
     if request.method == 'GET':
         pass
@@ -279,7 +284,9 @@ def history(request: HttpRequest):
     else:
         raise TypeError('fatal')    # todo base exception 
     
-    context = {}
+    context = {
+        'items': items
+    }
 
     return render(request, 'expiry/history.html', context=context)
     
@@ -319,9 +326,34 @@ def edit_item_view(request: HttpRequest, item_id):
     if not request.user.is_authenticated:
         return redirect("login")
 
+    logger.debug('edit view accessed')
+
     item = get_object_or_404(Item, id=item_id, user=request.user)
 
     if request.method == "POST":
+        logger.debug('request is POST')
+
+        match request.POST.get('action'):
+            case "delete":
+                logger.debug('action == delete')
+
+                item.deleted = True
+                item.deletion_date = datetime.datetime.now()
+                item.save()
+                return redirect('items')
+            case "undo":
+                logger.debug('action == undo')
+                item.deleted = False
+                item.deletion_date = None
+                item.save()
+                logger.debug('item undo successful')
+                return HttpResponse(status=200)
+            case _:
+                logger.debug(f'match default, action is: {request.POST.get('action')}')
+
+                pass
+
+        
         form = AddItem(request.POST)
         if form.is_valid():
             item.item_name = form.cleaned_data["item_name"]
@@ -333,6 +365,8 @@ def edit_item_view(request: HttpRequest, item_id):
             return redirect("items")
 
     else:
+        logger.debug(f'request is {request.method}')
+
         form = AddItem(initial={
             "item_name": item.item_name,
             "item_category": item.item_category,
@@ -344,6 +378,18 @@ def edit_item_view(request: HttpRequest, item_id):
         "form": form,
         "item": item,
     })
+
+# def delete_item(request: HttpRequest, item_id):
+#     if not request.user.is_authenticated:
+#         return redirect("login")
+    
+#     if not request.method == "POST":
+#         # todo appropriate error
+#         return render(request, ...) #todo
+    
+#     # look up object with id
+#     # delete it
+
 
 # ---------------------------- Sched Helper Funcs -----------------------------
 def scheduler_delete(data: dict) -> requests.Response | None:

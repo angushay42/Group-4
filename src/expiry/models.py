@@ -49,6 +49,8 @@ class Item(models.Model):
         choices=STORAGE_TYPE_CHOICES
     )
     quantity = models.PositiveIntegerField()
+    deleted = models.BooleanField()
+    deletion_date = models.DateTimeField(null=True)
 
 class UserSettings(models.Model):
     user = models.ForeignKey(

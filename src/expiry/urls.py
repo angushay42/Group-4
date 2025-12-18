@@ -11,5 +11,7 @@ urlpatterns = [
     path('items', views.items_list, name='items'),
     path('add-item', views.add_item_view, name='add_item'),
     path("items/<int:item_id>/edit/", views.edit_item_view, name="edit_item"),
+    # path("items/<int:item_id>/delete/", views.delete_item, name='delete_item'),   #todo might need again
     path('history', views.history, name='history')
+
 ]
