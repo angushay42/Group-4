@@ -15,24 +15,24 @@ class RegisterUserForm(UserCreationForm):
     email = forms.EmailField(
         max_length=150, 
         widget=forms.TextInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
-                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
             'placeholder': 'Email'
         })
     )
     first_name = forms.CharField(
         max_length=50, 
         widget=forms.TextInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
-                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
             'placeholder' : 'Name'
         })
     )
     last_name = forms.CharField(
         max_length=50, 
         widget=forms.TextInput(attrs={
-        'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
-                    'focus:ring-0 focus:border-green-600 rounded-xl',
+        'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none '\
+                    'focus:ring-0 focus:border-0-green-600 rounded-xl',
         'placeholder' : 'Surname'
         })
     )
@@ -40,8 +40,8 @@ class RegisterUserForm(UserCreationForm):
     terms = forms.BooleanField(
         required=True,
         widget=forms.CheckboxInput(attrs={
-        'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
-                    'focus:ring-0 focus:border-green-600 rounded-xl',
+        'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none '\
+                    'focus:ring-0 focus:border-0-green-600 rounded-xl',
             }
         )
     )
@@ -62,18 +62,18 @@ class RegisterUserForm(UserCreationForm):
 
         # apply styling to all inherited fields
         self.fields['username'].widget.attrs.update({
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none '\
                         'focus:ring-0 focus:border-green-600 rounded-xl',
             'placeholder' : 'Username'
         })
         self.fields['password1'].widget.attrs.update({
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
-                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
             'placeholder' : 'Password'
         })
         self.fields['password2'].widget.attrs.update({
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
-                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
             'placeholder' : 'Confirm Password'
         })
 
@@ -85,16 +85,16 @@ class LogininForm(forms.Form):
     username = forms.CharField(
         max_length=150, 
         widget=forms.TextInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
-                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'class':    'border-0 w-full flex-1 text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
             'placeholder': 'Username'
         })
     )
 
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
-                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'class':    'border-0 w-full flex-1 text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
             'placeholder': 'Password'
         })
     )
@@ -122,8 +122,8 @@ class ForgotPassForm(PasswordResetForm):
     email = forms.CharField(
         max_length=150, 
         widget=forms.EmailInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
-                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
             'placeholder': 'Email'
         })
     )
@@ -153,8 +153,8 @@ class AddItem(forms.Form):
         max_length=50,
         label="Item Name",
         widget=forms.TextInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 '
-                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none dark:bg-gray-700 dark:border-0-gray-600 dark:text-white dark:placeholder-gray-400 '
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
             'placeholder': 'Enter item name'
         })
     )
@@ -164,8 +164,8 @@ class AddItem(forms.Form):
         choices= Item.ITEM_CHOICES,
         label="Category",
         widget=forms.Select(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none  dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400'
-                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none  dark:bg-gray-700 dark:border-0-gray-600 dark:text-white dark:placeholder-gray-400'
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
             'placeholder': 'e.g., Fruit, Dairy, Vegetables'
         })
     )
@@ -174,8 +174,8 @@ class AddItem(forms.Form):
         min_value=1,
         required=True,
         widget=forms.NumberInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400'
-                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none dark:bg-gray-700 dark:border-0-gray-600 dark:text-white dark:placeholder-gray-400'
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
             'placeholder': 'Quantity'
         })
     )
@@ -183,8 +183,8 @@ class AddItem(forms.Form):
     expiry_date = forms.DateField(
         required=True,
         widget=forms.DateInput(attrs={
-            'class':    'border w-full text-base px-2 py-1 focus:outline-none  dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400'
-                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none  dark:bg-gray-700 dark:border-0-gray-600 dark:text-white dark:placeholder-gray-400'
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
             'placeholder': 'YYYY-MM-DD',
             'type': 'date',
         })
@@ -215,7 +215,7 @@ class SettingsForm(forms.Form):
     notification_days = forms.MultipleChoiceField(
         choices=Days,
         widget=forms.CheckboxSelectMultiple(attrs={
-            'class': 'w-4 h-4 text-green-600 bg-neutral-secondary-medium border-default-medium rounded dark:border-gray-600 focus:ring-green-500 focus:ring-2'
+            'class': 'w-4 h-4 text-green-600 bg-neutral-secondary-medium border-0-default-medium rounded dark:border-0-gray-600 focus:ring-green-500 focus:ring-2'
         }),
         required=False,
     )
@@ -223,7 +223,7 @@ class SettingsForm(forms.Form):
     notification_time = forms.TimeField(
         required=False  ,
         widget=forms.TimeInput(attrs={
-            'class': "dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            'class': "dark:bg-gray-700 dark:border-0-gray-600 dark:text-white"
         }),
         initial = time(9,30)
     )

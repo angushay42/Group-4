@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 import logging
+from dotenv import dotenv_values
 
 logger = logging.getLogger('tests')
 
@@ -33,6 +34,7 @@ SECRET_KEY = 'django-insecure-_63i9njj5oiin9+4e)in5ms08-1(qu)hob5bwt(j25d6^6mwt#
 DEBUG = True
 ENV_PATH = BASE_DIR / 'expiry/.env.standard'
 TEST_ENV_PATH = BASE_DIR / 'expiry/.env.test'
+DEPLOY_ENV_PATH = BASE_DIR / 'expiry/.env.deployment'
 
 ALLOWED_HOSTS = []
 
@@ -60,15 +62,19 @@ SCHED_SERVER_PORT = 3131            # lucky number
 TAILWIND_APP_NAME = 'Users'
 
 
-# todo WARNING this need to be environment variables
+with open('.test.txt', 'a') as f:
+    print('checking deployment...', file=f)
 if os.environ.get('DEPLOYMENT', "0") == "1":
+    with open('.test.txt', 'a') as f:
+        print('updating deployment vars...', file=f)
+    os.environ.update(dotenv_values(DEPLOY_ENV_PATH))
     EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST          = ''    # todo
+    EMAIL_HOST          = "smtp.gmail.com"
     EMAIL_PORT          = 587
     EMAIL_USE_TLS       = True
-    EMAIL_HOST_USER     = ''    # todo
-    EMAIL_HOST_PASS     = ''    # todo
-    DEFAULT_FROM_EMAIL  = ''    # todo
+    EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+    DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL', '')
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 

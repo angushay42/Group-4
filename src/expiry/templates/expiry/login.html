@@ -25,15 +25,18 @@
                 {% endif %}
 
                 <div class="flex justify-between items-center flex-col gap-6 md:gap-2">
-                    {{ login_form.username }}
-                    {% if login_form.username.errors %}
-                    <span class="text-red-500 text-sm">{{ login_form.username.errors }}</span>
-                    {% endif %}
+                    {% for field in login_form %}
+                        <div class="rounded-xl px-6 py-3 flex w-full items-center justify-between gap-3 shadow-xl
+                        hover:-translate-y-0.5 transition dark:bg-gray-700 dark:border-gray-600 dark:text-white ">
+                            {{ field }}
 
-                    {{ login_form.password }}
-                    {% if login_form.password.errors %}
-                    <span class="text-red-500 text-sm">{{ login_form.password.errors }}</span>
-                    {% endif %}
+                            {% if field.errors %}
+                            <p class="text-red-500 text-sm">
+                                {{ field.errors|striptags }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
 
                     <button
                             type="submit"
