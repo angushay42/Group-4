@@ -1,59 +1,486 @@
-from django.contrib.auth.forms import UserChangeForm, UserCreationForm, AuthenticationForm
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth import get_user
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.core.validators import EmailValidator, validate_email
-from django.core.handlers.wsgi import WSGIRequest
-from django.contrib.sessions.models import Session
-from . import forms
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth import login, logout, authenticate
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.http.request import HttpRequest
+from django.http.response import HttpResponse
+from django.utils import timezone
+from django.db.models import Case, When, IntegerField
+from django.forms.models import model_to_dict
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
+from . import forms
+from expiry.forms import AddItem, ChangePassForm, DetailsForm
+from expiry.models import Item, UserSettings
+from group4 import settings as django_settings
 
 import logging
-
-
+import datetime
+import requests
+import json
+import os
+import dotenv
 
 logger = logging.getLogger('views')
 
-def startup(request):
+SOON_THRESH = 1  # todo
+SCHED_URL = f"http://{django_settings.SCHED_SERVER_URL}:{django_settings.SCHED_SERVER_PORT}"
+HEADERS = {
+    'Authorization': f"Bearer {os.environ.get('API_KEY')}",
+    'Content-Type': 'application/json'
+}
+
+os.environ.update(dotenv.dotenv_values(django_settings.ENV_PATH))
+
+
+def startup(request: HttpRequest):
     logger.debug("startup page viewed")
     return render(request, 'expiry/startup.html')
 
-def logout_view(request):
+
+def logout_view(request: HttpRequest):
     logout(request)
     return redirect("login")
 
-def login_view(request):
 
+def login_view(request: HttpRequest):
+    code = 200
     if request.user.is_authenticated:
         return redirect("dashboard")
 
     if request.method == "POST":
+        # todo ugly
+        if request.POST.get('test_name'):
+            logger.debug(f"testname: {request.POST.get('test_name')}")
+
         form = forms.LogininForm(request.POST)
         if form.is_valid():
             user = form.cleaned_data['user']
+            check = authenticate(
+                request,
+                username=user.username,
+                password=user.password
+            )
+
             login(request, user)
             messages.success(request, "Logged in successfully!")
             return redirect("dashboard")
+        else:
+            logger.debug(
+                f"login form invalid"
+            )
+            logger.debug(
+                f"errors: {form.errors.as_json()}"
+            )
+            try:
+                errors: dict = json.loads(form.errors.as_json())
+            except:
+                logger.debug(
+                    f"error getting errors..."
+                )
+                ValueError("fatal")
+
+            errors = errors.get('__all__')
+
+            if any("Invalid" in message['message'] for message in errors):
+                code = 401
+            else:
+                code = 400
     else:
         form = forms.LogininForm()
-    return render(request, "expiry/login.html", {"form" : form})
+    return render(
+        request,
+        "expiry/login.html",
+        {"login_form": form},
+        status=code
+    )
 
-def signup_view(request):
+
+def signup_view(request: HttpRequest):
     if request.method == "POST":
         form = forms.RegisterUserForm(request.POST)
         if form.is_valid():
-            login(request,form.save())
+            login(request, form.save())
             return redirect("dashboard")
     else:
         form = forms.RegisterUserForm()
-    return render(request, 'expiry/signup.html', {"form" : form})
+    return render(request, 'expiry/signup.html', {"form": form})
 
-def dashboard(request):
-    if not request.user.is_authenticated:    #limits access when not logged in
+
+def forgot_password(request: HttpRequest):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+    
+    if request.method == 'POST':
+        form = forms.ForgotPassForm(request.POST)
+        if form.is_valid():
+            pass    # todo
+
+    form = forms.ForgotPassForm()
+
+    context = {
+        'form': form
+    }
+
+    return render(request, 'expiry/forgot_password.html', context=context)
+
+
+
+def dashboard(request: HttpRequest):
+    
+    if not request.user.is_authenticated:  # limits access when not logged in
+        return render(request, "login")  # redirect?
+
+    user = User.objects.get(username=request.user.username)
+    items = Item.objects.filter(user=user, deleted=False)
+
+    # get total, expires soon, frozen
+    expiry_threshold = (
+            timezone.now() +
+            datetime.timedelta(days=SOON_THRESH)
+    )
+
+    context = {
+        'items': items,
+        "totals": {
+            'frozen': items.filter(storage_type=Item.FREEZER, deleted=False).count(),
+            'total': items.count(),
+            'soon': items.filter(expiry_date__lte=expiry_threshold, deleted=False).count(),
+        }
+    }
+
+    return render(request, 'expiry/dashboard.html', context=context)
+
+
+def items_list(request: HttpRequest):
+    """
+    render all items
+    take a query parameter to filter by
+    error check for query parameters, if a false one given, just ignore it?
+    """
+
+    # todo clean input, or make sure dashboard.html sends same string
+    filter = request.GET.get('filter')
+
+    if not request.user.is_authenticated:
         return render(request, "login")
+
+    logger.debug(f"items_list getting user and items")
+    user = User.objects.get(username=request.user.username)
+    items = Item.objects.filter(user=user, deleted=False).order_by("-expiry_date")
+
+    logger.debug(f"items: {items}")
+
+    context = {'items': list(items)}
+
+    # todo filtering
+    if filter == "frozen":
+        # annotate adds extra rows ONLY to QuerySet, shouldn't be
+        # too much overhead
+        # https://docs.djangoproject.com/en/5.2/topics/db/aggregation/
+        # https://docs.djangoproject.com/en/5.2/ref/models/conditional-expressions/
+        filtered = items.annotate(
+            is_frozen=Case(
+                When(storage_type="frozen", then=0),  # 0 is first
+                default=1,
+                output_field=IntegerField(),  # necessary?
+            )
+        ).order_by("is_frozen", "expiry_date")
+
+        context['items'] = filtered  # todo safe?
+    logger.debug(f"context: {context}")
+
+    return render(request, 'expiry/items.html', context=context)
+
+
+def settings(request: HttpRequest):
+    if not request.user.is_authenticated:
+        return render(request, "login")
+    
+    user = User.objects.get(username=request.user.username)
+
+    _settings, created = UserSettings.objects.get_or_create(
+        user=request.user,
+        defaults={
+            'notifications': False,
+            'dark_mode': False,
+            'notification_time': datetime.time(9, 30),
+            'notification_days': [],
+        }
+    )
+
+
+    if request.method == 'POST':
+        form = forms.SettingsForm(request.POST)
+
+        if form.is_valid():
+            notif_enabled = form.cleaned_data.get('notifications', False)
+            
+            if form.cleaned_data.get('notifications', False) == False:
+                logger.debug(f"notifications disabled")
+                
+
+                response = scheduler_delete(user_id=user.pk)
+                if response and not response.status_code == 200:
+                    raise TypeError     # todo application exception
+            else:
+                notif_time: datetime.time = \
+                    form.cleaned_data.get('notification_time', False)
+                logger.debug('getting notification_days')
+                notif_days = form.cleaned_data.get('notification_days', [])
+                notif_days = [int(x) for x in notif_days]
+                logger.debug(f"{notif_days}")
+
+            if notif_enabled:
+                if not (
+                        notif_time == _settings.notification_time
+                        and notif_days == _settings.notification_days
+                ):
+                    response = scheduler_delete(user_id=user.pk)
+
+                    response = scheduler_add(
+                        user_id=user.pk, 
+                        days=notif_days,
+                        notif_time=notif_time
+                    )
+                    # todo if response is None (no scheduler), what to do?
+
+                    if response and not response.status_code == 201:    # created
+                        raise TypeError     # todo application exception
+                    
+            # save settings
+            _settings.notifications = bool(notif_enabled)
+            _settings.notification_days = notif_days if notif_enabled else None
+            _settings.notification_time = notif_time if notif_enabled else None
+            _settings.dark_mode = form.cleaned_data['dark_mode']
+            _settings.save()
+
+            messages.success(request, "Settings saved!")
+            return redirect('settings')
+
     else:
-        return render(request, 'expiry/dashboard.html')
+        # Pre-populate form with current settings
+        notif_days_initial = []
+        if _settings.notification_days:
+            notif_days_initial = [str(d) for d in _settings.notification_days]
+
+        form = forms.SettingsForm(initial={
+            'notifications': _settings.notifications,
+            'dark_mode': _settings.dark_mode,
+            'notification_time': _settings.notification_time,
+            'notification_days': notif_days_initial,
+        })
+
+    context = {
+        'settings': _settings,
+        'form': form
+    }
+
+    return render(request, 'expiry/settings.html', context=context)
 
 
+def account_settings(request: HttpRequest):
+    if not request.user.is_authenticated:
+        return render(request, "login")
+    
+    user = User.objects.get(id=request.user.pk)
+
+    # fill with defaults
+    details_form = DetailsForm(
+        initial={
+            "username": user.username,
+            "first_name": user.first_name if user.first_name else "",
+            "last_name":  user.last_name if user.last_name else ""
+        }
+    )
+
+    if request.method == 'POST':
+        details_form = DetailsForm(request.POST)
+        if details_form.is_valid():
+            user.first_name = details_form.cleaned_data['first_name']
+            user.last_name = details_form.cleaned_data['last_name']
+            user.save()
+
+        password_form = ChangePassForm(user, request.POST)
+        if password_form.is_valid():
+            password_form.save()
+
+            return redirect('account_settings')
+        else:
+            logger.debug(f"Password form error: {password_form.errors}")
+
+    else:   # GET
+
+        password_form = ChangePassForm(user)
+
+    context = {
+        'details_form': details_form,
+        'password_form': password_form
+    }
+    return render(request, 'expiry/account_settings.html', context=context)
+
+
+def history(request: HttpRequest):
+    if not request.user.is_authenticated:
+        return render(request, "login")
+    
+    user = User.objects.get(id=request.user.pk)
+    items = Item.objects.filter(deleted=True).order_by("-expiry_date")
+
+    if request.method == 'GET':
+        pass
+    elif request.method == 'POST':
+        pass
+    else:
+        raise TypeError('fatal')    # todo base exception 
+    
+    context = {
+        'items': items
+    }
+
+    return render(request, 'expiry/history.html', context=context)
+    
+
+def add_item_view(request: HttpRequest):
+    if not request.user.is_authenticated:  # limits access when not logged in
+        return redirect("login")
+
+    if request.method == "POST":
+        logger.debug(f"add_item POST requested")
+        form = AddItem(request.POST)
+        if form.is_valid():
+            item_name = form.cleaned_data['item_name']
+            item_category = form.cleaned_data['item_category']
+            expiry_date = form.cleaned_data['expiry_date']
+            quantity = form.cleaned_data['quantity']
+
+            # TODO: Add database saving here
+            Item.objects.create(
+                user=request.user,
+                item_name=item_name,
+                expiry_date=expiry_date,
+                item_category=item_category,
+                quantity=quantity
+            )
+
+            messages.success(request, "Item added successfully!")
+            return redirect("items")
+    else:
+        form = AddItem()
+
+    return render(request, "expiry/add_item.html", {"form": form})
+
+
+def edit_item_view(request: HttpRequest, item_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    logger.debug('edit view accessed')
+
+    item = get_object_or_404(Item, id=item_id, user=request.user)
+
+    if request.method == "POST":
+        logger.debug('request is POST')
+
+        match request.POST.get('action'):
+            case "delete":
+                logger.debug('action == delete')
+
+                item.deleted = True
+                item.deletion_date = datetime.datetime.now()
+                item.save()
+                logger.debug('item deletion successful')
+                return redirect('items')
+            case "undo":
+                logger.debug('action == undo')
+                item.deleted = False
+                item.deletion_date = None
+                item.save()
+                logger.debug('item undo successful')
+                return HttpResponse(status=200)
+            case _:
+                logger.debug(f'match default, action is: {request.POST.get('action')}')
+
+                pass
+
+        
+        form = AddItem(request.POST)
+        if form.is_valid():
+            item.item_name = form.cleaned_data["item_name"]
+            item.item_category = form.cleaned_data["item_category"]
+            item.quantity = form.cleaned_data["quantity"]
+            item.expiry_date = form.cleaned_data["expiry_date"]
+            item.save()
+
+            return redirect("items")
+
+    else:
+        logger.debug(f'request is {request.method}')
+
+        form = AddItem(initial={
+            "item_name": item.item_name,
+            "item_category": item.item_category,
+            "quantity": item.quantity,
+            "expiry_date": item.expiry_date,
+        })
+
+    return render(request, "expiry/edit_item.html", {
+        "form": form,
+        "item": item,
+    })
+
+
+# ---------------------------- Sched Helper Funcs -----------------------------
+def scheduler_delete(job_id: str = "", user_id: int = -1) -> requests.Response | None:
+    logger.debug(f"deleting notification with job_id: {job_id}, user_id: {user_id}...")
+    
+    if not (bool(not job_id) ^ bool(user_id < 0)):
+        raise TypeError("CRITICAL ERROR: incorrect signature for delete")
+
+    # job package signature
+    data = {
+        "job_id": job_id,
+        "user_id": user_id
+    }
+
+    response = None
+    try:
+        response = requests.post(
+            f"{SCHED_URL}/delete_notification",
+            headers=HEADERS,
+            json=data
+        )
+    except requests.exceptions.RequestException as e:
+        logger.debug(f"ERROR: could not communicate with scheduler {e.request}")
+    
+    return response
+
+
+def scheduler_add(user_id: int, days: list[int], notif_time: datetime.time) -> requests.Response:
+    logger.debug(
+        f"deleting notification with user_id: {user_id}, days: {days}, time: {notif_time}..."
+    )
+
+    data = {
+        'user_id': user_id,
+        'time': {
+            'hour': notif_time.hour,
+            'minute': notif_time.minute
+        },
+        'days': days
+    }
+
+    logger.debug(f"formatted data: {data}")
+
+    response = None
+    try:
+        response = requests.post(
+            f"{SCHED_URL}/add_notification",
+            headers=HEADERS,
+            json=data
+        )
+    except requests.exceptions.RequestException as e:
+        logger.debug(f"ERROR: could not communicate with scheduler {e.request}")
+    
+    return response

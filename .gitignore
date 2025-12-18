@@ -1,7 +1,14 @@
 test.py
 /.vscode
 /env
+.env
 notes.md
 *.log
 /logs
 __pycache__/
+/venv-12
+Procfile*
+_sched_test.py
+
+_test.py
+.env*

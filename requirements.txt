@@ -1,3 +1,8 @@
 django
 requests
 pyzbar
+tailwind
+django-tailwind[cookiecutter,honcho,reload]
+django-apscheduler 
+fastapi[standard]
+cron_converter

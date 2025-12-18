@@ -1,0 +1,157 @@
+{% load static %}
+
+<!-- Desktop Sidebar -->
+<nav
+        id="sidebar"
+        class="hidden md:block fixed top-0 left-0 h-full dark:shadow-black/30 dark:from-green-600 dark:to-green-800 bg-gradient-to-br from-green-400 to-green-600 text-white p-10 shadow-md w-64 md:w-72 lg:w-80 -translate-x-full transition-transform duration-300 ease-in-out origin-left z-[1000]"
+>
+
+
+    <ul class="flex flex-col gap-10">
+        <li>
+            <a
+                href="/dashboard"
+                class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+            >
+                <div class="material-symbols-outlined text-5xl mb-2">home</div>
+                Home
+            </a>
+        </li>
+        <li>
+            <a
+                    href="/add-item"
+                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300
+                ease-out
+                hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+                <div class="material-symbols-outlined text-5xl mb-2">add_box</div>
+                Add Item
+            </a>
+        </li>
+        <li>
+            <a
+                    href="/items"
+                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300 ease-out
+            hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+                <div class="material-symbols-outlined text-5xl mb-2">kitchen</div>
+                My Items
+            </a>
+        </li>
+        <li>
+            <a
+                    href="/history"
+                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300
+                ease-out
+                hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+                <div class="material-symbols-outlined text-5xl mb-2">history</div>
+                History
+            </a>
+        </li>
+        <li>
+            <a
+                href="{% url 'settings' %}"
+                    class="glass rounded-xl px-6 py-3 flex items-center gap-3 shadow-2xl transition-all duration-300
+                ease-out
+                hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0">
+                <div class="material-symbols-outlined text-5xl mb-2">settings</div>
+                Settings
+            </a>
+        </li>
+    </ul>
+
+    <button
+            id="toggleBtn"
+            onclick="toggleSidebar()"
+            class="absolute top-4 right-0 translate-x-full bg-gradient-to-br from-green-400 to-green-600 dark:from-green-600 dark:to-green-800 text-white p-2 rounded-r-md"
+    >
+        <span class="material-symbols-outlined" id="toggleIcon">chevron_left</span>
+    </button>
+</nav>
+
+<!-- Desktop Menu Button -->
+<button
+        id="menuBtn"
+        onclick="toggleSidebar()"
+        class="hidden md:block fixed top-4 left-0 bg-gray-800 text-white p-2 rounded-r-md z-10 dark:bg-gray-700"
+>
+    <span class="material-symbols-outlined">menu</span>
+</button>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="md:hidden fixed bottom-0 dark:from-green-600 dark:to-green-800 left-0 right-0 bg-gradient-to-br dark:shadow-black/30 from-green-400 to-green-600 text-white shadow-lg z-[1000]">
+    <ul class="flex justify-around items-center py-2">
+        <li>
+            <a href="/dashboard"
+               class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
+                <span class="material-symbols-outlined text-3xl">home</span>
+                <span class="text-xs">Home</span>
+            </a>
+        </li>
+        <li>
+            <a href="/add-item"
+               class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
+                <span class="material-symbols-outlined text-3xl">add_box</span>
+                <span class="text-xs">Add Item</span>
+            </a>
+        </li>
+        <li>
+            <a href="/items" class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
+                <span class="material-symbols-outlined text-3xl">kitchen</span>
+                <span class="text-xs">My Items</span>
+            </a>
+        </li>
+        <li>
+            <a href="/history"
+               class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
+                <span class="material-symbols-outlined text-3xl">history</span>
+                <span class="text-xs">History</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'settings' %}"
+               class="flex flex-col items-center gap-1 py-2 px-3 transition-all hover:bg-white/20 rounded-lg">
+                <span class="material-symbols-outlined text-3xl">settings</span>
+                <span class="text-xs">Settings</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<script>
+    let isSidebarOpen = false;
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const toggleIcon = document.getElementById('toggleIcon');
+        const menuBtn = document.getElementById('menuBtn');
+
+        isSidebarOpen = !isSidebarOpen;
+
+        if (isSidebarOpen) {
+            sidebar.classList.remove('-translate-x-full');
+            sidebar.classList.add('translate-x-0');
+            toggleIcon.textContent = 'chevron_left';
+            menuBtn.classList.add('hidden');
+        } else {
+            sidebar.classList.remove('translate-x-0');
+            sidebar.classList.add('-translate-x-full');
+            toggleIcon.textContent = 'chevron_right';
+            menuBtn.classList.remove('hidden');
+        }
+    }
+
+    // Store sidebar state in sessionStorage
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem('sidebarOpen', isSidebarOpen);
+    });
+
+    // Restore sidebar state on page load (desktop only)
+    window.addEventListener('load', () => {
+        if (window.innerWidth >= 768) {
+            const savedState = sessionStorage.getItem('sidebarOpen');x
+            if (savedState === 'true') {
+                toggleSidebar();
+            }
+        }
+    });
+</script>

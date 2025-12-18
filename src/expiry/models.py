@@ -1,1 +1,84 @@
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+from datetime import datetime, date
 
+class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True)
+
+    class Meta:
+        # Make sure you **don’t** have abstract = True
+        abstract = False  # or just remove this line
+
+
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
+class Item(models.Model):
+    # define choice variables
+    FRUIT = "FRUIT"
+    DAIRY = "DAIRY"
+    BREAD = "BREAD"
+    VEGETABLES = "VEG"    # bug: any good?
+    EGGS = "EGGS"
+    MEAT = "MEAT"
+
+    ITEM_CHOICES = {
+        FRUIT:      "Fruit",
+        DAIRY:      "Dairy",
+        BREAD:      "Bread",
+        VEGETABLES: "Vegetables",
+        EGGS:       "Eggs",
+        MEAT:       "Meat"
+    }
+
+    FRIDGE  = "FRDG"
+    FREEZER = "FRZR"
+    AMBIENT = "AMBI"
+
+    STORAGE_TYPE_CHOICES = {
+        FRIDGE:     "Fridge",
+        FREEZER:    "Freezer",
+        AMBIENT:    "Ambient"
+    }
+
+    # actual class attributes 
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+    item_name = models.CharField(max_length=20)     # BUG: magic number
+    expiry_date = models.DateField()                # todo: any params?
+    entry_date = models.DateTimeField(
+        db_default=models.functions.Now()
+    )
+    item_category = models.CharField(
+        max_length=5,
+        choices=ITEM_CHOICES,
+    )
+    storage_type = models.CharField(
+        max_length=4,
+        choices=STORAGE_TYPE_CHOICES
+    )
+    quantity = models.PositiveIntegerField()
+    deleted = models.BooleanField(db_default=False, default=False)
+    deletion_date = models.DateTimeField(null=True)
+
+
+
+class UserSettings(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+    notifications = models.BooleanField()
+    dark_mode = models.BooleanField()
+    notification_time = models.TimeField(null=True) 
+    notification_days = models.JSONField(default=list, null=True)
+    
+    #TODO account settings
+
+class NotifJob(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    job_id = models.CharField(max_length=255)   # unsure how long  
+    # auto_now can't be overriden
+    created_at = models.DateTimeField(auto_now_add=True)

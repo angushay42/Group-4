@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+import logging
+from dotenv import dotenv_values
+
+logger = logging.getLogger('tests')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,9 +32,11 @@ SECRET_KEY = 'django-insecure-_63i9njj5oiin9+4e)in5ms08-1(qu)hob5bwt(j25d6^6mwt#
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+ENV_PATH = BASE_DIR / 'expiry/.env.standard'
+TEST_ENV_PATH = BASE_DIR / 'expiry/.env.test'
+DEPLOY_ENV_PATH = BASE_DIR / 'expiry/.env.deployment'
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -43,10 +50,29 @@ INSTALLED_APPS = [
     'expiry',
     'Users',
     'tailwind',
+    'django_apscheduler',
 ]
+
+# todo check this works
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+APSCHEDULER_RUN_NOW_TIMEOUT = 35    # seconds 
+SCHED_SERVER_URL = "127.0.0.1"        # localhost
+SCHED_SERVER_PORT = 3131            # lucky number
 
 TAILWIND_APP_NAME = 'Users'
 
+
+if os.environ.get('DEPLOYMENT', "0") == "1":
+    os.environ.update(dotenv_values(DEPLOY_ENV_PATH))
+    EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST          = "smtp.gmail.com"
+    EMAIL_PORT          = 587
+    EMAIL_USE_TLS       = True
+    EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+    DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL', '')
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -64,13 +90,14 @@ ROOT_URLCONF = 'group4.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'expiry.context_processors.user_settings',
             ],
         },
     },
@@ -81,10 +108,13 @@ WSGI_APPLICATION = 'group4.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
+TEST_RUNNER = 'expiry.integration_test_runner.IntegrationRunner'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.environ.get('DJANGO_TEST_DB', BASE_DIR / 'db.sqlite3')   # clever 
     }
 }
 
@@ -107,6 +137,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'expiry.CustomUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -138,25 +169,51 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
     "handlers": {
         "django_file": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
             "filename": LOGS_DIR / "django.log",
+            "formatter": "simple"
         },
         "views_file": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
             "filename": LOGS_DIR / "views.log",
+            "formatter": "verbose"
         },
         "tests_file": {
             "level": "DEBUG",
             "class": "logging.FileHandler",
             "filename": LOGS_DIR / "tests.log",
+            "formatter": "verbose"
+        },
+        "forms_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": LOGS_DIR / "forms.log",
+            "formatter": "verbose"
+        },
+        "jobs_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": LOGS_DIR / "jobs.log",
+            "formatter": "verbose"
         },
         "console": {
             "level": "INFO",
             "class": "logging.StreamHandler",
+            "formatter": "simple"
         },
     },
     "loggers": {
@@ -172,6 +229,16 @@ LOGGING = {
         },
         "tests": {
             "handlers": ["tests_file", "console"],
+            "level": "DEBUG",
+            "propogate": False,
+        },
+        "jobs": {
+            "handlers": ["jobs_file", "console"],
+            "level": "DEBUG",
+            "propogate": False,
+        },
+        "forms": {
+            "handlers": ["forms_file", "console"],
             "level": "DEBUG",
             "propogate": False,
         },

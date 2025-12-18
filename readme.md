@@ -1,7 +1,7 @@
 # Getting started
 
 ## Setup steps
-- Install python3.13
+- Install python3.13 (homebrew for Mac)
 - Git clone repo
 - `cd Group-4`
 - Run `python3.13 -m venv env` in terminal
