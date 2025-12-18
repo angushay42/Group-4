@@ -72,6 +72,12 @@
             }
         });
     });
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+            location.reload(); // only reload if the page came from cache
+        }
+    });
+
 </script>
 
 {% endblock %} 

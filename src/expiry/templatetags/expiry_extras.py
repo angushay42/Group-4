@@ -23,7 +23,6 @@ def checker(settings: UserSettings, value):
     val = int(value) in settings.notification_days
     return "checked" if val else ""
 
-
 @register.filter
 def required(settings: UserSettings):
     return "required" if settings.notifications else ""
@@ -95,3 +94,9 @@ def delta_days(expiry: date):
         s = f"{delta.days} day{"s" if delta.days > 1 else ""} left"
 
     return s
+
+@register.filter
+def expired(expiry_date):
+    if not expiry_date:
+        return False
+    return expiry_date < timezone.now().date()

@@ -148,7 +148,7 @@ def items_list(request: HttpRequest):
 
     logger.debug(f"items_list getting user and items")
     user = User.objects.get(username=request.user.username)
-    items = Item.objects.filter(user=user, deleted=False)
+    items = Item.objects.filter(user=user, deleted=False).order_by("-expiry_date")
 
     logger.debug(f"items: {items}")
 
@@ -291,7 +291,6 @@ def history(request: HttpRequest):
     return render(request, 'expiry/history.html', context=context)
     
 
-
 def add_item_view(request: HttpRequest):
     if not request.user.is_authenticated:  # limits access when not logged in
         return redirect("login")
@@ -379,17 +378,6 @@ def edit_item_view(request: HttpRequest, item_id):
         "form": form,
         "item": item,
     })
-
-# def delete_item(request: HttpRequest, item_id):
-#     if not request.user.is_authenticated:
-#         return redirect("login")
-    
-#     if not request.method == "POST":
-#         # todo appropriate error
-#         return render(request, ...) #todo
-    
-#     # look up object with id
-#     # delete it
 
 
 # ---------------------------- Sched Helper Funcs -----------------------------

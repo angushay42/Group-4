@@ -25,28 +25,39 @@
     {% for item in items %}
     <!-- load item contents, dunno how this should be styled -->
     <li>
+        {% csrf_token %}
         <div class="rounded-xl px-6 py-3 flex items-center justify-between gap-3 shadow-xl
                 hover:-translate-y-0.5 transition dark:bg-gray-700 dark:border-gray-600 dark:text-white ">
             <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined text-green-600">
-                    {% if item.item_category == 'FRUIT' %}
-                        nutrition
-                    {% elif item.item_category == 'DAIRY' %}
-                        local_pizza
-                    {% elif item.item_category == 'BREAD' %}
-                        bakery_dining
-                    {% elif item.item_category == 'VEG' %}
-                        eco
-                    {% elif item.item_category == 'EGGS' %}
-                        egg
-                    {% elif item.item_category == 'MEAT' %}
-                        kebab_dining
-                    {% endif %}
-                </span>
-
+                <div class="relative">
+                    <span class="material-symbols-outlined text-green-600">
+                        {% if item.item_category == 'FRUIT' %}
+                            nutrition
+                        {% elif item.item_category == 'DAIRY' %}
+                            local_pizza
+                        {% elif item.item_category == 'BREAD' %}
+                            bakery_dining
+                        {% elif item.item_category == 'VEG' %}
+                            eco
+                        {% elif item.item_category == 'EGGS' %}
+                            egg
+                        {% elif item.item_category == 'MEAT' %}
+                            kebab_dining
+                        {% endif %}
+                    </span>
+                    {% if item.expiry_date|expired %}
+                        <button 
+                            class="absolute del-button -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center"
+                            data-item-id="{{item.id}}"
+                        >x</button>
+                    {%endif%}
+                </div>
                 <div class="flex flex-col">
                     <span>{{ item.item_name }}</span>
-                    <span class="text-sm text-gray-500">{{ item.expiry_date|delta_days }}</span>
+                    <span 
+                        class="delta-days text-sm {% if not item.expiry_date|expired %}text-gray-500 {% else %} text-red-500 {%endif%}"
+                    >
+                        {{ item.expiry_date|delta_days }}</span>
                 </div>
 
                 <a href="{% url 'edit_item' item.id %}"
@@ -73,6 +84,37 @@
         </button>
     </a>
 </div>
-<!-- todo add button to add form -->
+
+<script>
+    const buttons = document.querySelectorAll(".del-button").forEach(button => {
+        button.addEventListener('click', async function() {
+            const itemId = this.dataset.itemId;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            try {
+                const response = await fetch(`/items/${itemId}/edit/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: new URLSearchParams({
+                        action: 'delete',
+                    }),
+                });
+                if (response.ok) {
+                    this.closest('li').remove();
+                }
+            } catch (e) {
+                console.error('error:', e);
+            }
+        
+        });
+    });
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+            location.reload(); // only reload if the page came from cache
+        }
+    });
+</script>
 
 {% endblock %}
