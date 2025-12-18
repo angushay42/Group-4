@@ -340,6 +340,7 @@ def edit_item_view(request: HttpRequest, item_id):
                 item.deleted = True
                 item.deletion_date = datetime.datetime.now()
                 item.save()
+                logger.debug('item deletion successful')
                 return redirect('items')
             case "undo":
                 logger.debug('action == undo')
