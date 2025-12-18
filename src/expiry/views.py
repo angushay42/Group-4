@@ -218,11 +218,10 @@ def settings(request: HttpRequest):
             notif_enabled = form.cleaned_data.get('notifications', False)
             
             if form.cleaned_data.get('notifications', False) == False:
-                data = {
-                    "job_id": "",
-                    "user_id": user.pk
-                }
-                response = scheduler_delete(data)
+                logger.debug(f"notifications disabled")
+                
+
+                response = scheduler_delete(user_id=user.pk)
                 if response and not response.status_code == 200:
                     raise TypeError     # todo application exception
             else:
@@ -238,16 +237,16 @@ def settings(request: HttpRequest):
                         notif_time == _settings.notification_time
                         and notif_days == _settings.notification_days
                 ):
-                    data = {
-                        'user': user.username,
-                        'time': notif_time,
-                        'day_of_week': notif_days
-                    }
+                    response = scheduler_delete(user_id=user.pk)
 
-                    response = scheduler_add(data)
+                    response = scheduler_add(
+                        user_id=user.pk, 
+                        days=notif_days,
+                        notif_time=notif_time
+                    )
                     # todo if response is None (no scheduler), what to do?
 
-                    if response and not response.status_code == 200:
+                    if response and not response.status_code == 201:    # created
                         raise TypeError     # todo application exception
                     
             # save settings
@@ -433,13 +432,24 @@ def edit_item_view(request: HttpRequest, item_id):
 
 
 # ---------------------------- Sched Helper Funcs -----------------------------
-def scheduler_delete(data: dict) -> requests.Response | None:
+def scheduler_delete(job_id: str = "", user_id: int = -1) -> requests.Response | None:
+    logger.debug(f"deleting notification with job_id: {job_id}, user_id: {user_id}...")
+    
+    if not (bool(not job_id) ^ bool(user_id < 0)):
+        raise TypeError("CRITICAL ERROR: incorrect signature for delete")
+
+    # job package signature
+    data = {
+        "job_id": job_id,
+        "user_id": user_id
+    }
+
     response = None
     try:
         response = requests.post(
-            f"{SCHED_URL}/delete_notifications",
+            f"{SCHED_URL}/delete_notification",
             headers=HEADERS,
-            data=data
+            json=data
         )
     except requests.exceptions.RequestException as e:
         logger.debug(f"ERROR: could not communicate with scheduler {e.request}")
@@ -447,13 +457,28 @@ def scheduler_delete(data: dict) -> requests.Response | None:
     return response
 
 
-def scheduler_add(data: dict) -> requests.Response:
+def scheduler_add(user_id: int, days: list[int], notif_time: datetime.time) -> requests.Response:
+    logger.debug(
+        f"deleting notification with user_id: {user_id}, days: {days}, time: {notif_time}..."
+    )
+
+    data = {
+        'user_id': user_id,
+        'time': {
+            'hour': notif_time.hour,
+            'minute': notif_time.minute
+        },
+        'days': days
+    }
+
+    logger.debug(f"formatted data: {data}")
+
     response = None
     try:
         response = requests.post(
-            f"{SCHED_URL}/delete_notifications",
+            f"{SCHED_URL}/add_notification",
             headers=HEADERS,
-            data=data
+            json=data
         )
     except requests.exceptions.RequestException as e:
         logger.debug(f"ERROR: could not communicate with scheduler {e.request}")

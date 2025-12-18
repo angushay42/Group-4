@@ -47,6 +47,8 @@ debugger(f"APP INCLUDED HERE")
 app = FastAPI()
 app.include_router(router=router)
 
+debugger(f"app routes: {app.routes}")
+
 @app.middleware('http')
 async def auth_requests(request: Request, call_next):
     logger.debug(

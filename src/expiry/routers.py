@@ -38,6 +38,7 @@ class NotificationPackage(BaseModel):
     days: list[int]
     time: dict[str, int]
 
+# todo class method for ease of use
 class JobPackage(BaseModel):
     user_id: int | None = None
     job_id: str | None = None
@@ -173,7 +174,7 @@ async def delete_notification(
         f"delete_notification called"
     )
 
-    if (body.job_id is None) == (body.user_id is None):
+    if not( bool(not body.job_id) ^ bool(not body.user_id)):
         logger.debug(
             f"no arguments given. body:{body.job_id}, user:{body.user_id}"
         )
@@ -306,7 +307,6 @@ async def _del_job(
 
     response.status_code = 200  # created
     return {"message": "job deleted successfully"}
-
 
 async def _clear_jobs(
     response: Response,

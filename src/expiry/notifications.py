@@ -11,6 +11,8 @@ import logging
 User = get_user_model()
 logger = logging.getLogger('jobs')  # todo new log
 
+
+# bug template does not exist
 def send_notification(user_id: int):
     # get user
 
@@ -31,9 +33,9 @@ def send_notification(user_id: int):
         "items": items,
     }
 
-    subject = render_to_string('expiry/emails/notification.txt', context=context)
+    subject = render_to_string('emails/notification.txt', context=context)
 
-    html = render_to_string('expiry/emails/notification.html', context=context)
+    html = render_to_string('emails/notification.html', context=context)
 
     # format email
     # send email
