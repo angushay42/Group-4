@@ -163,7 +163,6 @@ async def add_notification(
     return {"message": "success"}
 
 
-# todo also needs to delete from scheduler no? 
 @router.post('/delete_notification')
 async def delete_notification(
     body: JobPackage,
