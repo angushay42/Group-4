@@ -171,32 +171,6 @@ def items_list(request: HttpRequest):
 
     return render(request, 'expiry/items.html', context=context)
 
-def scheduler_delete(data: dict) -> requests.Response | None:
-    response = None
-    try:
-        response = requests.post(
-            f"{SCHED_URL}/delete_notifications",
-            headers=HEADERS,
-            data=data
-        )
-    except requests.exceptions.RequestException as e:
-        logger.debug(f"ERROR: could not communicate with scheduler {e.request}")
-    
-    return response
-
-
-def scheduler_add(data: dict) -> requests.Response:
-    response = None
-    try:
-        response = requests.post(
-            f"{SCHED_URL}/delete_notifications",
-            headers=HEADERS,
-            data=data
-        )
-    except requests.exceptions.RequestException as e:
-        logger.debug(f"ERROR: could not communicate with scheduler {e.request}")
-    
-    return response
 
 def settings(request: HttpRequest):
     if not request.user.is_authenticated:
@@ -294,6 +268,23 @@ def settings(request: HttpRequest):
     return render(request, 'expiry/settings.html', context=context)
 
 
+def history(request: HttpRequest):
+    if not request.user.is_authenticated:
+        return render(request, "login")
+
+    if request.method == 'GET':
+        pass
+    elif request.method == 'POST':
+        pass
+    else:
+        raise TypeError('fatal')    # todo base exception 
+    
+    context = {}
+
+    return render(request, 'expiry/history.html', context=context)
+    
+
+
 def add_item_view(request: HttpRequest):
     if not request.user.is_authenticated:  # limits access when not logged in
         return redirect("login")
@@ -353,3 +344,31 @@ def edit_item_view(request: HttpRequest, item_id):
         "form": form,
         "item": item,
     })
+
+# ---------------------------- Sched Helper Funcs -----------------------------
+def scheduler_delete(data: dict) -> requests.Response | None:
+    response = None
+    try:
+        response = requests.post(
+            f"{SCHED_URL}/delete_notifications",
+            headers=HEADERS,
+            data=data
+        )
+    except requests.exceptions.RequestException as e:
+        logger.debug(f"ERROR: could not communicate with scheduler {e.request}")
+    
+    return response
+
+
+def scheduler_add(data: dict) -> requests.Response:
+    response = None
+    try:
+        response = requests.post(
+            f"{SCHED_URL}/delete_notifications",
+            headers=HEADERS,
+            data=data
+        )
+    except requests.exceptions.RequestException as e:
+        logger.debug(f"ERROR: could not communicate with scheduler {e.request}")
+    
+    return response

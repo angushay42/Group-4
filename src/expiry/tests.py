@@ -301,7 +301,6 @@ class SecurityTestCase(TestCase):
         self.assertNotEqual(self.password, user.password)
 
 
-
 class JobServerTestCase(TransactionTestCase):
     BASE_URL = f"http://{SCHED_SERVER_URL}:{SCHED_SERVER_PORT}" # is http needed?
 
