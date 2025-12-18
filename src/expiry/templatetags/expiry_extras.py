@@ -77,9 +77,11 @@ def delta_helper(td: timedelta) -> str:
 def delta_days(expiry: date):
     s = ""
     now = timezone.now().date()
-    thresh = 1  # day
+    thresh = 1
 
-    delta = now - expiry
+    if thresh < 0:
+        return 'Error: invalid threshold'
+    delta = (expiry) - now
     logger.debug(f"delta {delta}")
     # if delta negative, then it has expired
     if delta.days < 0:
@@ -96,7 +98,8 @@ def delta_days(expiry: date):
     return s
 
 @register.filter
-def expired(expiry_date):
+def expired(expiry_date: date, thresh: int):
+    thresh = timedelta(days=thresh)
     if not expiry_date:
         return False
-    return expiry_date < timezone.now().date()
+    return (expiry_date - thresh) < timezone.now().date()
