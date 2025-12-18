@@ -258,3 +258,38 @@ class SettingsForm(forms.Form):
         initial=False,
         label='Dark Mode'
     )
+
+class DetailsForm(forms.Form):
+    username = forms.CharField(
+        max_length=50,
+    )
+    first_name = forms.CharField(
+        max_length=50,
+        required=False
+    )
+    last_name = forms.CharField(
+        max_length=50,
+        required=False
+    )
+
+    def __init__(self, *args, **kwargs): 
+        super().__init__(*args, **kwargs)
+
+        # apply styling to all inherited fields
+        self.fields['username'].widget.attrs.update({
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'placeholder' : 'Username'
+        })
+        self.fields['first_name'].widget.attrs.update({
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
+            'placeholder' : 'First name'
+        })
+        self.fields['last_name'].widget.attrs.update({
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
+            'placeholder' : 'Last name'
+        })
+    def clean(self):
+        super().clean()

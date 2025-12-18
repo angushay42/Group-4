@@ -14,6 +14,7 @@ urlpatterns = [
     path('add-item/', views.add_item_view, name='add_item'),
     path("items/<int:item_id>/edit/", views.edit_item_view, name="edit_item"),
     path('history/', views.history, name='history'),
+    path('settings/account/', views.account_settings, name='account_settings'),
     path('forgot_password/', 
         auth_views.PasswordResetView.as_view(
             template_name='expiry/forgot_password.html',  # your template

@@ -11,8 +11,8 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 from . import forms
-from .forms import AddItem
-from .models import Item, UserSettings
+from expiry.forms import AddItem, ChangePassForm, DetailsForm
+from expiry.models import Item, UserSettings
 from group4 import settings as django_settings
 
 import logging
@@ -198,8 +198,6 @@ def settings(request: HttpRequest):
     if not request.user.is_authenticated:
         return render(request, "login")
     
-
-
     user = User.objects.get(username=request.user.username)
 
     _settings, created = UserSettings.objects.get_or_create(
@@ -212,13 +210,6 @@ def settings(request: HttpRequest):
         }
     )
 
-    logger.debug(
-        f"{json.dumps(
-            model_to_dict(_settings),
-            indent=2, 
-            default=lambda x: str(x) if x is not None else ""
-        )}"
-    )
 
     if request.method == 'POST':
         form = forms.SettingsForm(request.POST)
@@ -288,6 +279,47 @@ def settings(request: HttpRequest):
     }
 
     return render(request, 'expiry/settings.html', context=context)
+
+
+def account_settings(request: HttpRequest):
+    if not request.user.is_authenticated:
+        return render(request, "login")
+    
+    user = User.objects.get(id=request.user.pk)
+
+    # fill with defaults
+    details_form = DetailsForm(
+        initial={
+            "username": user.username,
+            "first_name": user.first_name if user.first_name else "",
+            "last_name":  user.last_name if user.last_name else ""
+        }
+    )
+
+    if request.method == 'POST':
+        details_form = DetailsForm(request.POST)
+        if details_form.is_valid():
+            user.first_name = details_form.cleaned_data['first_name']
+            user.last_name = details_form.cleaned_data['last_name']
+            user.save()
+
+        password_form = ChangePassForm(user, request.POST)
+        if password_form.is_valid():
+            password_form.save()
+
+            return redirect('account_settings')
+        else:
+            logger.debug(f"Password form error: {password_form.errors}")
+
+    else:   # GET
+
+        password_form = ChangePassForm(user)
+
+    context = {
+        'details_form': details_form,
+        'password_form': password_form
+    }
+    return render(request, 'expiry/account_settings.html', context=context)
 
 
 def history(request: HttpRequest):
