@@ -1,12 +1,13 @@
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordResetForm
 from django import forms
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from datetime import date , time
 from .models import Item
 import logging
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 logger = logging.Logger('forms')
 
@@ -34,6 +35,15 @@ class RegisterUserForm(UserCreationForm):
                     'focus:ring-0 focus:border-green-600 rounded-xl',
         'placeholder' : 'Surname'
         })
+    )
+
+    terms = forms.BooleanField(
+        required=True,
+        widget=forms.CheckboxInput(attrs={
+        'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
+                    'focus:ring-0 focus:border-green-600 rounded-xl',
+            }
+        )
     )
 
     class Meta:
@@ -107,6 +117,35 @@ class LogininForm(forms.Form):
             cleaned_data['user'] = user
 
         return cleaned_data
+
+class ForgotPassForm(PasswordResetForm):
+    email = forms.CharField(
+        max_length=150, 
+        widget=forms.EmailInput(attrs={
+            'class':    'border w-full text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'placeholder': 'Email'
+        })
+    )
+
+    def clean(self):
+        try:
+            cleaned_data = super().clean()
+        except ValidationError as e:
+            logger.debug(
+                "error at {}: {}".format(timezone.now(), e)
+            )
+
+        email = cleaned_data.get('email')
+
+        try:
+            user = User.objects.get(email=email)
+
+        except User.DoesNotExist:
+            raise ValidationError("invalid email")
+
+        return cleaned_data
+
 
 class AddItem(forms.Form):
     item_name = forms.CharField(

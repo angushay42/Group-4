@@ -1,13 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.utils import timezone
 from django.db.models import Case, When, IntegerField
 from django.forms.models import model_to_dict
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 from . import forms
 from .forms import AddItem
@@ -105,6 +106,25 @@ def signup_view(request: HttpRequest):
     else:
         form = forms.RegisterUserForm()
     return render(request, 'expiry/signup.html', {"form": form})
+
+
+def forgot_password(request: HttpRequest):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+    
+    if request.method == 'POST':
+        form = forms.ForgotPassForm(request.POST)
+        if form.is_valid():
+            pass    # todo
+
+    form = forms.ForgotPassForm()
+
+    context = {
+        'form': form
+    }
+
+    return render(request, 'expiry/forgot_password.html', context=context)
+
 
 
 def dashboard(request: HttpRequest):

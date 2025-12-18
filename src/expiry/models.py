@@ -1,6 +1,17 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from datetime import datetime, date
+
+class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True)
+
+    class Meta:
+        # Make sure you **don’t** have abstract = True
+        abstract = False  # or just remove this line
+
+
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 class Item(models.Model):
     # define choice variables
@@ -49,8 +60,10 @@ class Item(models.Model):
         choices=STORAGE_TYPE_CHOICES
     )
     quantity = models.PositiveIntegerField()
-    deleted = models.BooleanField()
+    deleted = models.BooleanField(db_default=False, default=False)
     deletion_date = models.DateTimeField(null=True)
+
+
 
 class UserSettings(models.Model):
     user = models.ForeignKey(

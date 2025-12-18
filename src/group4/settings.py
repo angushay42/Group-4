@@ -60,6 +60,18 @@ SCHED_SERVER_PORT = 3131            # lucky number
 TAILWIND_APP_NAME = 'Users'
 
 
+# todo WARNING this need to be environment variables
+if os.environ.get('DEPLOYMENT', "0") == "1":
+    EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST          = ''    # todo
+    EMAIL_PORT          = 587
+    EMAIL_USE_TLS       = True
+    EMAIL_HOST_USER     = ''    # todo
+    EMAIL_HOST_PASS     = ''    # todo
+    DEFAULT_FROM_EMAIL  = ''    # todo
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -123,6 +135,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'expiry.CustomUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

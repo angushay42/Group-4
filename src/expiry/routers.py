@@ -17,9 +17,12 @@ from apscheduler.triggers.cron import CronTrigger
 from group4 import settings
 from django.db import connection
 from group4.settings import ENV_PATH
-from expiry.models import NotifJob, User
+from expiry.models import NotifJob
 from expiry.notifications import send_notification
 from expiry.scheduler_inst import get_scheduler
+
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 logger = logging.getLogger("jobs")
 

@@ -22,7 +22,8 @@ from django.test import (
     TestCase, TransactionTestCase, Client
 )
 from unittest import SkipTest
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from django.core import mail
 from django.forms.models import model_to_dict
 
