@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
-from expiry.forms import ForgotPassForm
+from expiry.forms import ForgotPassForm, ChangePassForm
 
 urlpatterns = [
     path('', views.startup, name='startup'),
@@ -33,7 +33,8 @@ urlpatterns = [
     path('reset/<uidb64>/<token>/', 
         auth_views.PasswordResetConfirmView.as_view(
             template_name='expiry/forgot_password_confirm.html',
-            success_url='/reset/done/'
+            form_class=ChangePassForm,
+            success_url='/login/'
         ), 
         name='password_reset_confirm'
     ),

@@ -62,11 +62,7 @@ SCHED_SERVER_PORT = 3131            # lucky number
 TAILWIND_APP_NAME = 'Users'
 
 
-with open('.test.txt', 'a') as f:
-    print('checking deployment...', file=f)
 if os.environ.get('DEPLOYMENT', "0") == "1":
-    with open('.test.txt', 'a') as f:
-        print('updating deployment vars...', file=f)
     os.environ.update(dotenv_values(DEPLOY_ENV_PATH))
     EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST          = "smtp.gmail.com"

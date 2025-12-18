@@ -1,4 +1,4 @@
-from django.contrib.auth.forms import UserCreationForm, PasswordResetForm
+from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, PasswordChangeForm
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
@@ -146,6 +146,26 @@ class ForgotPassForm(PasswordResetForm):
 
         return cleaned_data
 
+class ChangePassForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs): 
+        super().__init__(*args, **kwargs)
+
+        # apply styling to all inherited fields
+        self.fields['old_password'].widget.attrs.update({
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-green-600 rounded-xl',
+            'placeholder' : 'Old password'
+        })
+        self.fields['new_password1'].widget.attrs.update({
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
+            'placeholder' : 'Password'
+        })
+        self.fields['new_password2'].widget.attrs.update({
+            'class':    'border-0 w-full text-base px-2 py-1 focus:outline-none '\
+                        'focus:ring-0 focus:border-0-green-600 rounded-xl',
+            'placeholder' : 'Confirm Password'
+        })
 
 class AddItem(forms.Form):
     item_name = forms.CharField(
